@@ -3,35 +3,57 @@
 #include <getopt.h>
 #include <ivy.h>
 #include <ivyloop.h>
+#include <errno.h>  
+#include <pthread.h>
+#include <string.h>
 
+//MACRO
+#define min(a,b) (a<=b?a:b) 
+#define sgn(x) ((x>0)-(x<0))
+
+pthread_mutex_t lock;
+
+//Variable globale 
 float roll_cmd;
-char cmd[100] = "GC_CMD_ROLL = INIT";
-bool active = True;
+int active = 1;
 
-/* fonction associe a  */
+/* fonction associe a l'arrivée d'information */
 void calculRoulis(IvyClientPtr app, void *data, int argc, char **argv){
-	int time;
-	float XTK, TAE, DTWPT;
-	int roll_commande;
-	char retour[100] = "GC_CMD_ROLL =";
-	const char* arg = (argc < 1) ? "" : argv[0];
-	fprintf(stderr,"%s\n",arg);
-	//GS_DATA Time="time" XTK="" TAE="" Dist_to_WPT=""
-	sscanf(arg,"GS_DATA Time=%d XTK=%d TAE=%d Dist_to_WPT=%d",time, XTK, TAE, DTWPT); // GS_XTK_TAE = time
-	//fonction de check time/donnee
-	roll_commande = 200; //Calcul de la commande de roulis
-	if(active){ //On transmet la commande si le PA est actif
-	    strcat(retour, actual_time);
-	    strcat(retour,roll_commande);
-	    IvySendMsg ("%s", retour);
-	    //roll_cmd = retour;
-	    //calcul = 0;
-	}
+	
+	float time = atof(argv[0]);
+	float xtk = atof(argv[1]);
+	float tae = atof(argv[2]);
+	float dist = atof(argv[3]);
+
+	
+	float roll_commande;
+	
+	const float k1 = 1;
+	const float k2 = 1;
+	
+
+	//TO DO fonction de check time/donnee
+	
+	//TO DO recuperer la Ground Speed gs et bank angle reference bar 
+	float bar = 0;
+	float gs = 240;
+	pthread_mutex_lock(&lock);
+	roll_cmd = min(bar + k1 * xtk + k2 * tae/gs, sgn(bar)*25); //Calcul de la commande de roulis
+	pthread_mutex_unlock(&lock);
+	
 }
 /* fonction associe a l'horloge */
-
 void envoi(IvyClientPtr app, void *data, int argc, char **argv){
-
+	char retour[100] = "GC_CMD_ROLL =";
+	/*
+	if(calcul < 100){
+		if(clocl%100=90){ //envoi tout les 100ms à 90ms
+			IvySendMsg ("%f", roll_cmd);
+			calcul++;
+		}
+	}
+	else{active = False;}
+	*/
 }
 /*
 on verifie si le calculRoulis a eu lieu
@@ -41,16 +63,6 @@ si non
 on envoi la commande précédente
 si 1s 
 on desarme le PA
-void Sender(IvyClientPtr app, void *data, int argc, char **argv){
-    char retour[100] = "GC_CMD_ROLL =";
-    if(calcul < 100){
-        if(clocl%100=90){ //envoi tout les 100ms à 90ms
-	        IvySendMsg ("%s", roll_cmd);
-	        calcul++;
-        }
-    }
-    else{active = False;}
-}
 
 IMPORTANT définir avec le groupe seq la periode de l'horloge 10 ou 20 ms
 */
@@ -75,8 +87,7 @@ int main (int argc, char**argv){
 		}
 	}
 	else{
-		printf("Definir un bus -b 127.127.127.127:2010\n");
-		exit(1);
+		bus = NULL;
 	}
 
 	/* initialisation */
@@ -84,6 +95,7 @@ int main (int argc, char**argv){
 	IvyStart (bus);
 	/* abonnement  */
 	IvyBindMsg (calculRoulis, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" "
+	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4
 	/* abonnement */
 	IvyBindMsg (stop, 0, "^Stop$");
 	/* abonnement */
