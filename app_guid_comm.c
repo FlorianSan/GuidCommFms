@@ -49,7 +49,7 @@ void calculRoulisNav(IvyClientPtr app, void *data, int argc, char **argv){
 	
 
 	//TO DO fonction de check time/donnee
-	
+	//définir quoi faire si temps pas bon -> ecrire sur la sortie temps pas bon
 	
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
 	float cmd = min(bar + k1 * xtk + k2 * tae/gs, sgn(bar)*25); //Calcul de la commande de roulis
