@@ -14,10 +14,17 @@
 pthread_mutex_t lock_roll_cmd;
 pthread_mutex_t lock_gs;
 
-//Variable globale 
-float roll_cmd;
-float gs; //ground spedd
-int active = 1;
+//Variables globales protégées des accès concurents
+float roll_cmd; // commande de roulis
+float gs; //ground speed
+
+//Variables globales 
+//TO DO passer les données dans un pointeur data
+int active = 1; //PA est en mode actif
+float _previousTime; //stockage du temps précédent pour calculRoulis (check chronologie des données
+
+
+
 /* fonction associe a l'arrivée de la vitesse sol */
 void groundSpeed(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_gs);
@@ -26,7 +33,7 @@ void groundSpeed(IvyClientPtr app, void *data, int argc, char **argv){
 }
 
 /* fonction associe a l'arrivée d'information */
-void calculRoulis(IvyClientPtr app, void *data, int argc, char **argv){
+void calculRoulisNav(IvyClientPtr app, void *data, int argc, char **argv){
 	
 	float time = atof(argv[0]);
 	float xtk = atof(argv[1]);
@@ -53,6 +60,12 @@ void calculRoulis(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_unlock(&lock_roll_cmd);
 	
 }
+
+void calculRoulisHead(){
+	//A faire
+	
+	
+}
 /* fonction associe a l'horloge */
 void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 	char retour[100] = "GC_CMD_ROLL =";
@@ -75,6 +88,7 @@ on envoi la commande précédente
 si 1s 
 on desarme le PA
 
+appele calculRoulisHead 
 IMPORTANT définir avec le groupe seq la periode de l'horloge 10 ou 20 ms
 */
 
@@ -108,7 +122,7 @@ int main (int argc, char**argv){
 	//on s'abonne à l'holorge qui cadence nos envois
 	IvyBindMsg (groundSpeed, 0, "^GT_PARAM_GS=(.*)");
 	/* abonnement  */
-	IvyBindMsg (calculRoulis, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
+	IvyBindMsg (calculRoulisNav, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
 	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4 BANK_ANGLE_REF=5
 	
 	/* abonnement */
@@ -117,6 +131,7 @@ int main (int argc, char**argv){
 	
 	/* abonnement */
 	IvyBindMsg (stop, 0, "^Stop$");
+	
 	/* main loop */
 	IvyMainLoop();
 	return 0;
