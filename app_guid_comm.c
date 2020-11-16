@@ -11,11 +11,19 @@
 #define min(a,b) (a<=b?a:b) 
 #define sgn(x) ((x>0)-(x<0))
 
-pthread_mutex_t lock;
+pthread_mutex_t lock_roll_cmd;
+pthread_mutex_t lock_gs;
 
 //Variable globale 
 float roll_cmd;
+float gs; //ground spedd
 int active = 1;
+/* fonction associe a l'arrivée de la vitesse sol */
+void groundSpeed(IvyClientPtr app, void *data, int argc, char **argv){
+	pthread_mutex_lock(&lock_gs);
+	gs = atof(argv[0]);
+	pthread_mutex_unlock(&lock_gs);
+}
 
 /* fonction associe a l'arrivée d'information */
 void calculRoulis(IvyClientPtr app, void *data, int argc, char **argv){
@@ -24,6 +32,7 @@ void calculRoulis(IvyClientPtr app, void *data, int argc, char **argv){
 	float xtk = atof(argv[1]);
 	float tae = atof(argv[2]);
 	float dist = atof(argv[3]);
+	float back_angle_ref = atof(argv[4]);
 
 	
 	float roll_commande;
@@ -34,12 +43,14 @@ void calculRoulis(IvyClientPtr app, void *data, int argc, char **argv){
 
 	//TO DO fonction de check time/donnee
 	
-	//TO DO recuperer la Ground Speed gs et bank angle reference bar 
-	float bar = 0;
-	float gs = 240;
-	pthread_mutex_lock(&lock);
-	roll_cmd = min(bar + k1 * xtk + k2 * tae/gs, sgn(bar)*25); //Calcul de la commande de roulis
-	pthread_mutex_unlock(&lock);
+	
+	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
+	float cmd = min(bar + k1 * xtk + k2 * tae/gs, sgn(bar)*25); //Calcul de la commande de roulis
+	pthread_mutex_unlock(&lock_gs);
+	
+	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
+	roll_cmd = cmd;
+	pthread_mutex_unlock(&lock_roll_cmd);
 	
 }
 /* fonction associe a l'horloge */
@@ -93,14 +104,19 @@ int main (int argc, char**argv){
 	/* initialisation */
 	IvyInit ("Guid_COMM_APP", "Bonjour de Guid COMM", 0, 0, 0, 0);
 	IvyStart (bus);
-	/* abonnement  */
-	IvyBindMsg (calculRoulis, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" "
-	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4
 	/* abonnement */
-	IvyBindMsg (stop, 0, "^Stop$");
+	//on s'abonne à l'holorge qui cadence nos envois
+	IvyBindMsg (groundSpeed, 0, "^GT_PARAM_GS=(.*)");
+	/* abonnement  */
+	IvyBindMsg (calculRoulis, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
+	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4 BANK_ANGLE_REF=5
+	
 	/* abonnement */
 	//on s'abonne à l'holorge qui cadence nos envois
 	IvyBindMsg (envoi, 0, "^Time=(.*)");
+	
+	/* abonnement */
+	IvyBindMsg (stop, 0, "^Stop$");
 	/* main loop */
 	IvyMainLoop();
 	return 0;
