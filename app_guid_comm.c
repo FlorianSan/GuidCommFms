@@ -66,6 +66,23 @@ void calculRoulisHead(){
 	
 	
 }
+
+void Mode(IvyClientPtr app, void *data, int argc, char **argv){
+    int hdg;
+    const char* arg = (argc < 1) ? "" : argv[0];
+    if(arg[1]=="Managed"){
+        active = 1;
+    }
+    else if (arg[1]=="SelectedHeading"){
+        active = 0;
+        hdg = arg[2]; //à vérifier
+        
+    }
+    else {
+        active = 0;
+    }
+}
+
 /* fonction associe a l'horloge */
 void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 	char retour[100] = "GC_CMD_ROLL =";
