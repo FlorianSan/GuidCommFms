@@ -6,6 +6,7 @@
 #include <errno.h>  
 #include <pthread.h>
 #include <string.h>
+#include <time.h>
 
 //MACRO
 #define min(a,b) (a<=b?a:b) 
@@ -36,6 +37,8 @@ void groundSpeed(IvyClientPtr app, void *data, int argc, char **argv){
 
 /* fonction associe a l'arrivée d'information */
 void calculRoulisNav(IvyClientPtr app, void *data, int argc, char **argv){
+
+	clock_t begin = clock();
 	
 	float time = atof(argv[0]);
 	float xtk = atof(argv[1]);
@@ -51,33 +54,39 @@ void calculRoulisNav(IvyClientPtr app, void *data, int argc, char **argv){
 	
 
 	//TO DO fonction de check time/donnee
-	//définir quoi faire si temps pas bon -> ecrire sur la sortie temps pas bon
+	if(time < _previousTime){
+	fprintf(stderr,"Probleme de chronologie des données\n");
+	}
 	
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
-	float cmd = min(bar + k1 * xtk + k2 * tae/gs, sgn(bar)*25); //Calcul de la commande de roulis
+	float cmd = min(back_angle_ref + k1 * xtk + k2 * tae/gs, sgn(back_angle_ref)*25); //Calcul de la commande de roulis
 	pthread_mutex_unlock(&lock_gs);
 	
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
 	roll_cmd = cmd;
 	pthread_mutex_unlock(&lock_roll_cmd);
 	
+	_previousTime = time;
+	clock_t end = clock();
+    	unsigned long micro = (end -  begin) * 1000000 / CLOCKS_PER_SEC;
+    	fprintf(stderr,"Temps d'execution : %ld micro seconde\n",micro);
 }
 
 void calculRoulisHead(){
-	//A faire
-	
+	fprintf(stderr,"Ne fait rien");
 	
 }
 
 void Mode(IvyClientPtr app, void *data, int argc, char **argv){
     int hdg;
-    const char* arg = (argc < 1) ? "" : argv[0];
-    if(arg[1]=="Managed"){
+    char mode_managed[] = "Managed", mode_selected[] = "SelectedHeading";
+    
+    if(strcmp(argv[0],mode_managed) == 0){
         active = 1;
     }
-    else if (arg[1]=="SelectedHeading"){
+    else if (strcmp(argv[0],mode_selected) == 0){
         active = 0;
-        hdg = arg[2]; //à vérifier
+        hdg = atof(argv[1]); //à vérifier
         
     }
     else {
@@ -151,7 +160,7 @@ int main (int argc, char**argv){
 	IvyStart (bus);
 	/* abonnement */
 	//on s'abonne à l'holorge qui cadence nos envois
-	IvyBindMsg (groundSpeed, 0, "^GT_PARAM_GS=(.*)");
+	IvyBindMsg (groundSpeed, 0, "^GT_PARAM_GS=(.*)");//GT_PARAM_GS=240
 	/* abonnement  */
 	IvyBindMsg (calculRoulisNav, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
 	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4 BANK_ANGLE_REF=5
