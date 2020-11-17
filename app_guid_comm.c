@@ -87,22 +87,24 @@ void Mode(IvyClientPtr app, void *data, int argc, char **argv){
 
 /* fonction associe a l'horloge */
 void envoi(IvyClientPtr app, void *data, int argc, char **argv){
-    int tm;
+    int time;
+    char tm[50], r_cmd[50];
     const char* arg = (argc < 1) ? "" : argv[0]; //récupère le temps
-    sscanf(arg, "%d", &tm);
+    sscanf(arg, "%d", &time);
 	if(nb_envoi < 100){ //la même commande n'a pas été envoyée pendant 1 seconde
-		if(clocl%100=90){ //envoi tout les 100ms à 90ms
-		    if(pthread_mutex_trylock(lock_roll_cmd)=0){ //si la commande est accèssible
+		if(time%100==90){ //envoi tout les 100ms à 90ms
+		    if(pthread_mutex_trylock(&lock_roll_cmd)==0){ //si la commande est accèssible
 		        cmd = roll_cmd;
 	            pthread_mutex_unlock(&lock_roll_cmd);
 	            nb_envoi = 0;
 	        }
 	        else {nb_envoi++;} //sinon on reprend la commande précédente déjà enregistrée dans cmd
 		    char retour[100] = "GC_CMD_ROLL =";
-		    strcat(retour, &tm); //actual time
-		    strcat(retour, cmd); //commande, ancienne ou pas
+		    sprintf(tm, "%d", time);
+		    sprintf(r_cmd, "%f", cmd);
+		    strcat(retour, tm); //actual time
+		    strcat(retour, r_cmd); //commande, ancienne ou pas
 			IvySendMsg ("%s", retour);
-			calcul++;
 		}
 	}
 	else{active = 0;} //on désactive le PA après 1 seconde
