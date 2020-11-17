@@ -104,8 +104,8 @@ void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 		if(time%100==90){ //envoi tout les 100ms à 90ms
 		    if(pthread_mutex_trylock(&lock_roll_cmd)==0){ //si la commande est accèssible
 		        cmd = roll_cmd;
-	            pthread_mutex_unlock(&lock_roll_cmd);
-	            nb_envoi = 0;
+	            	pthread_mutex_unlock(&lock_roll_cmd);
+	            	nb_envoi = 0;
 	        }
 	        else {nb_envoi++;} //sinon on reprend la commande précédente déjà enregistrée dans cmd
 		    char retour[100] = "GC_CMD_ROLL =";
