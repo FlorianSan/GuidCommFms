@@ -13,14 +13,16 @@
 #define sgn(x) ((x>0)-(x<0))
 
 pthread_mutex_t lock_roll_cmd;
+pthread_mutex_t lock_bank_angle;
 pthread_mutex_t lock_gs;
 
 //Variables globales protégées des accès concurents
 float roll_cmd; // commande de roulis
+float global_bank_angle_obj;
 float gs; //ground speed
 
 //Variables globales 
-//TO DO passer les données dans un pointeur data
+//TODO passer les données dans un pointeur data
 int active = 1; //PA est en mode actif
 float _previousTime; //stockage du temps précédent pour calculRoulis (check chronologie des données
 float cmd; //stockage de la commande précédente en cas de bloquage des calculs roulis
@@ -31,12 +33,12 @@ int nb_envoi = 0;
 /* fonction associe a l'arrivée de la vitesse sol */
 void groundSpeed(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_gs);
-	gs = atof(argv[0]);
+	gs = atof(argv[8]); //on recupere la ground speed du modele avion
 	pthread_mutex_unlock(&lock_gs);
 }
 
 /* fonction associe a l'arrivée d'information */
-void calculRoulisNav(IvyClientPtr app, void *data, int argc, char **argv){
+void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 
 	clock_t begin = clock();
 	
@@ -47,24 +49,22 @@ void calculRoulisNav(IvyClientPtr app, void *data, int argc, char **argv){
 	float back_angle_ref = atof(argv[4]);
 
 	
-	float roll_commande;
-	
 	const float k1 = 1;
 	const float k2 = 1;
 	
 
-	//TO DO fonction de check time/donnee
+	//TODO fonction de check donnee
 	if(time < _previousTime){
 	fprintf(stderr,"Probleme de chronologie des données\n");
 	}
 	
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
-	float cmd = min(back_angle_ref + k1 * xtk + k2 * tae/gs, sgn(back_angle_ref)*25); //Calcul de la commande de roulis
+	float bank_angle_obj = min(back_angle_ref + k1 * xtk + k2 * tae/gs, sgn(back_angle_ref)*25); //Calcul de la commande de roulis
 	pthread_mutex_unlock(&lock_gs);
 	
-	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
-	roll_cmd = cmd;
-	pthread_mutex_unlock(&lock_roll_cmd);
+	pthread_mutex_lock(&lock_bank_angle); // protection de la variable globale bank_angle
+	global_bank_angle_obj = bank_angle_obj;
+	pthread_mutex_unlock(&lock_bank_angle);
 	
 	_previousTime = time;
 	clock_t end = clock();
@@ -72,9 +72,26 @@ void calculRoulisNav(IvyClientPtr app, void *data, int argc, char **argv){
     	fprintf(stderr,"Temps d'execution : %ld micro seconde\n",micro);
 }
 
-void calculRoulisHead(){
+void calculBankAngleObjHead(){
 	fprintf(stderr,"Ne fait rien");
 	
+}
+
+void computeRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
+
+	float bank_angle_aircraft = atof(argv[6]); //correspond à phi donc le bank angle mesured
+	
+	const float kp = 1;
+	const float kd = 0;
+	const float ki = 0;
+	
+	pthread_mutex_lock(&lock_bank_angle); // protection de la variable globale bank_angle
+	float calcul = kp*(global_bank_angle_obj - bank_angle_aircraft); //TODO fini le pid
+	pthread_mutex_unlock(&lock_bank_angle);
+	
+	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
+	roll_cmd = calcul;
+	pthread_mutex_unlock(&lock_roll_cmd);
 }
 
 void Mode(IvyClientPtr app, void *data, int argc, char **argv){
@@ -158,14 +175,22 @@ int main (int argc, char**argv){
 	/* initialisation */
 	IvyInit ("Guid_COMM_APP", "Bonjour de Guid COMM", 0, 0, 0, 0);
 	IvyStart (bus);
-	/* abonnement */
-	//on s'abonne à l'holorge qui cadence nos envois
-	IvyBindMsg (groundSpeed, 0, "^GT_PARAM_GS=(.*)");//GT_PARAM_GS=240
+	
+
+	//on s'abonne à
+	IvyBindMsg (groundSpeed, 0, "^AircraftSetPosition X=(.*) Y=(.*) Altitude-ft=(.*) Roll=(.*) Pitch=(.*) Yaw=(.*) Heading=(.*) Airspeed=(.*) Groundspeed=(.*)");
+	//AircraftSetPosition X=-2.0366696227720553e-16 Y=0.8693304535637149 Altitude-ft=0.0 Roll=0.0 Pitch=0.0 Yaw=0.0 Heading=360.0 Airspeed=136.06911447084232 Groundspeed=136.06911447084232
+	
 	/* abonnement  */
-	IvyBindMsg (calculRoulisNav, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
+	IvyBindMsg (calculBankAngleObjNav, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
 	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4 BANK_ANGLE_REF=5
 	
-	/* abonnement */
+	IvyBindMsg (computeRollCmd, 0, "^StateVector x=(.*) y=(.*) z=(.*) Vp=(.*) fpa=(.*) psi=(.*) phi=(.*)");//StateVector x=1610.0 y=-3.7719121413738466e-13 z=0.0 Vp=70.0 fpa=0.0 psi=6.283185307179586 phi=0.0
+	
+	//on s'abonne 
+	IvyBindMsg (Mode, 0, "^FCULateral Mode=(.*) Val=(.*)");//FCULateral Mode=SelectedHeading Val=10"
+	
+	
 	//on s'abonne à l'holorge qui cadence nos envois
 	IvyBindMsg (envoi, 0, "^Time=(.*)");
 	
