@@ -97,17 +97,16 @@ void getstate(IvyClientPtr app, void *data, int argc, char **argv){
 }
 void computeRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
 
-	const float kp = 1;
-	const float kd = 0;
-	const float ki = 0;
+	
+	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
+	local_bank_angle_aircraft = bank_angle_aircraft;
+	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
 	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
-	pthread_mutex_lock(&lock_bank_angle_aircraft);
-	float calcul = pid(global_bank_angle_obj, bank_angle_aircraft); //TODO
-	
-	pthread_mutex_unlock(&lock_bank_angle_aircraft);
+	local_bank_angle_obj = global_bank_angle_obj;
 	pthread_mutex_unlock(&lock_bank_angle_obj);
 	
+	float calcul = pid(local_bank_angle_obj, local_bank_angle_aircraft); //calcul du pid coeff défini dans pid.c
 	
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
 	roll_cmd = calcul;
