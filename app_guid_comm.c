@@ -23,13 +23,28 @@ pthread_mutex_t lock_gs;
 pthread_mutex_t lock_heading_aircraft;
 pthread_mutex_t lock_heading_objective;
 
+
+struct varGlobFloat
+{
+	float value;
+	int modif; //1 si l'info est produite 0 si l'info est consommé
+	
+};
+
+struct varGlobLint
+{
+	long int value;
+	int modif; //1 si l'info est produite 0 si l'info est consommé
+	
+};
 //Variables globales protégées des accès concurents
-float roll_cmd; // commande de roulis
-float global_bank_angle_obj;
-float gs; //ground speed
-float bank_angle_aircraft;
-long int heading_aircraft;
-long int heading_objective;
+struct varGlobFloat roll_cmd; // commande de roulis
+struct varGlobFloat global_bank_angle_obj;
+struct varGlobFloat gs; //ground speed
+struct varGlobFloat bank_angle_aircraft;
+
+struct varGlobLint heading_aircraft;
+struct varGlobLint heading_objective;
 
 //Variables globales 
 //TODO passer les données dans un pointeur data
@@ -38,16 +53,20 @@ float _previousTime; //stockage du temps précédent pour calculRoulis (check ch
 float cmd; //stockage de la commande précédente en cas de bloquage des calculs roulis
 int nb_envoi = 0;
 
-
+void erreur(char* info){
+	fprintf(stderr,"Probleme %s\n",info);
+}
 
 /* fonction associe a l'arrivée de la vitesse sol */
 void getposition(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_gs);
-	gs = atof(argv[8]); //on recupere la ground speed du modele avion
+	gs.value = atof(argv[8]); //on recupere la ground speed du modele avion
+	gs.modif = 1;
 	pthread_mutex_unlock(&lock_gs);
 	
 	pthread_mutex_lock(&lock_heading_aircraft);
-	heading_aircraft = atof(argv[6]); //on recupere le cap du modele avion
+	heading_aircraft.value = atof(argv[6]); //on recupere le cap du modele avion
+	heading_aircraft.modif = 1;
 	pthread_mutex_unlock(&lock_heading_aircraft);
 }
 
@@ -66,18 +85,27 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	const float k1 = 1;
 	const float k2 = 1;
 	
+	float bank_angle_obj;
+	
 
 	//TODO fonction de check donnee
-	if(time < _previousTime){ //TODO temps prédictible
+	if(time < _previousTime){ 
 		fprintf(stderr,"Probleme de chronologie des données\n");
 	}
 	
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
-	float bank_angle_obj = min(back_angle_ref + k1 * xtk + k2 * tae/gs, sgn(back_angle_ref)*25); //Calcul de la commande de roulis
+	if (gs.modif){
+	bank_angle_obj = min(back_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(back_angle_ref)*25); //Calcul de la commande de roulis
+	}
+	else{
+		erreur("calculBankAngleObjNav/gs");
+		bank_angle_obj = 0;
+	}
 	pthread_mutex_unlock(&lock_gs);
 	
 	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
-	global_bank_angle_obj = bank_angle_obj;
+	global_bank_angle_obj.value = bank_angle_obj;
+	global_bank_angle_obj.modif =1;
 	pthread_mutex_unlock(&lock_bank_angle_obj);
 	
 	_previousTime = time;
@@ -92,24 +120,37 @@ void calculBankAngleObjHead(){
 }
 void getstate(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_bank_angle_aircraft);
-	bank_angle_aircraft = atof(argv[6]); //correspond à phi donc le bank angle mesured
+	bank_angle_aircraft.value = atof(argv[6]); //correspond à phi donc le bank angle mesured
+	bank_angle_aircraft.modif = 1;
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
 void computeRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
 
+	float local_bank_angle_aircraft, local_bank_angle_obj;
 	
 	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
-	local_bank_angle_aircraft = bank_angle_aircraft;
+	if(bank_angle_aircraft.modif){
+		local_bank_angle_aircraft = bank_angle_aircraft.value;
+	}
+	else{
+		erreur("computeRollCmd/bank_angle_aircraft");
+	}
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
 	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
-	local_bank_angle_obj = global_bank_angle_obj;
-	pthread_mutex_unlock(&lock_bank_angle_obj);
+	if(global_bank_angle_obj.modif){
+		local_bank_angle_obj = global_bank_angle_obj.value;
+	}
+	else{
+		erreur("computeRollCmd/global_bank_angle_obj");
+	}
+		pthread_mutex_unlock(&lock_bank_angle_obj);
 	
 	float calcul = pid(local_bank_angle_obj, local_bank_angle_aircraft); //calcul du pid coeff défini dans pid.c
 	
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
-	roll_cmd = calcul;
+	roll_cmd.value = calcul;
+	roll_cmd.modif = 1;
 	pthread_mutex_unlock(&lock_roll_cmd);
 }
 
@@ -125,7 +166,8 @@ void Mode(IvyClientPtr app, void *data, int argc, char **argv){
 	else if (strcmp(argv[0],mode_selected) == 0){
 	active = 0;
 	pthread_mutex_lock(&lock_heading_objective);
-	heading_objective = strtol(argv[1], &endPtr, 10 ); 
+	heading_objective.value = strtol(argv[1], &endPtr, 10 ); 
+	heading_objective.modif = 1;
 	pthread_mutex_unlock(&lock_heading_objective);
 	}
 	else {
@@ -142,37 +184,33 @@ void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 	if(nb_envoi < 100){ //la même commande n'a pas été envoyée pendant 1 seconde
 		if(time%100==90){ //envoi tout les 100ms à 90ms
 		    if(pthread_mutex_trylock(&lock_roll_cmd)==0){ //si la commande est accèssible
-		        cmd = roll_cmd;
+		    	if(roll_cmd.modif){
+		        	cmd = roll_cmd.value;
+		        }
+		        else{
+		        	erreur("envoi/roll_cmd");
+		        }
 	            	pthread_mutex_unlock(&lock_roll_cmd);
 	            	nb_envoi = 0;
-	        }
-	        else {nb_envoi++;} //sinon on reprend la commande précédente déjà enregistrée dans cmd
+			}
+		    else{
+			nb_envoi++;
+		    } //sinon on reprend la commande précédente déjà enregistrée dans cmd
 		    char retour[100] = "GC_CMD_ROLL =";
 		    sprintf(tm, "%d", time);
 		    sprintf(r_cmd, "%f", cmd);
 		    strcat(retour, tm); //actual time
 		    strcat(retour, r_cmd); //commande, ancienne ou pas
-			IvySendMsg ("%s", retour);
+		    IvySendMsg ("%s", retour);
 		}
 	}
 	else{active = 0;} //on désactive le PA après 1 seconde
-	
 }
-/*
-on verifie si le calculRoulis a eu lieu
-si oui
-on check si on doit envoyer notre info (100ms)
-si non 
-on envoi la commande précédente
-si 1s 
-on desarme le PA
 
-appele calculRoulisHead 
-IMPORTANT définir avec le groupe seq la periode de l'horloge 10 ou 20 ms
-*/
+
 
 /* fonction associe a  */
-void stop (IvyClientPtr app, void *data, int argc, char **argv){
+void stop(IvyClientPtr app, void *data, int argc, char **argv){
 	IvyStop ();
 }
 

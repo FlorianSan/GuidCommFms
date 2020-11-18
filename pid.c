@@ -1,11 +1,11 @@
 #include "pid.h"
 
-#define UMAX 1  //valeur max de roulis
-#define UMIN -1 //valeur min de roulis
+#define UMAX 3  //valeur max de roulis
+#define UMIN -3 //valeur min de roulis
 
-#define KP 1    // proportional gain
+#define KP 7    // proportional gain
 #define KI 0    //integral gain
-#define KD 0    //derivative gain
+#define KD 12    //derivative gain
 
 #define N 20    //filter coefficients
 #define TS 0.01            
@@ -18,7 +18,7 @@
 #define B2 KP + KD*N
 #define KU1  A1/A0
 #define KU2  A2/A0
-#define KE0 B0/B0
+#define KE0 B0/A0
 #define KE1 B1/A0
 #define KE2  B2/A0
 
