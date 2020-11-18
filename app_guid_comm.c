@@ -126,7 +126,7 @@ void getstate(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
 
-void computeRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
+void computeRollCmd(){
 
 	float local_bank_angle_aircraft, local_bank_angle_obj;
 	
@@ -185,8 +185,11 @@ void envoi(IvyClientPtr app, void *data, int argc, char **argv){
     char tm[50], r_cmd[50];
     const char* arg = (argc < 1) ? "" : argv[0]; //récupère le temps
     sscanf(arg, "%d", &time);
-	if(nb_envoi < 100){ //la même commande n'a pas été envoyée pendant 1 seconde
-		if(time%100==90){ //envoi tout les 100ms à 90ms
+    if(time%100==70){ //On calcule la commande durée à définir
+        computeRollCmd();   
+    }
+    else if(time%100==90){ //envoi tout les 100ms à 90ms
+	    if(nb_envoi < 100 && active){ //la même commande ne doit pas être envoyée pendant plus d'une seconde et le PA doit être actif
 		    if(pthread_mutex_trylock(&lock_roll_cmd)==0){ //si la commande est accèssible
 		    	if(roll_cmd.modif){
 		        	cmd = roll_cmd.value;
@@ -198,9 +201,9 @@ void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 	            	pthread_mutex_unlock(&lock_roll_cmd);
 	            	nb_envoi = 0;
 			}
-		    else{
-			nb_envoi++;
-		    } //sinon on reprend la commande précédente déjà enregistrée dans cmd
+		    else{  //sinon on reprend la commande précédente déjà enregistrée dans cmd
+			    nb_envoi++;
+		    } 
 		    char retour[100] = "GC_CMD_ROLL =";
 		    sprintf(tm, "%d", time);
 		    sprintf(r_cmd, "%f", cmd);
@@ -208,8 +211,8 @@ void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 		    strcat(retour, r_cmd); //commande, ancienne ou pas
 		    IvySendMsg ("%s", retour);
 		}
+		else{active = 0;} //on désactive le PA après 1 seconde
 	}
-	else{active = 0;} //on désactive le PA après 1 seconde
 }
 
 
