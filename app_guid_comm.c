@@ -96,6 +96,7 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
 	if (gs.modif){
 	bank_angle_obj = min(back_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(back_angle_ref)*25); //Calcul de la commande de roulis
+	gs.modif = 0;
 	}
 	else{
 		erreur("calculBankAngleObjNav/gs");
@@ -124,6 +125,7 @@ void getstate(IvyClientPtr app, void *data, int argc, char **argv){
 	bank_angle_aircraft.modif = 1;
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
+
 void computeRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
 
 	float local_bank_angle_aircraft, local_bank_angle_obj;
@@ -131,6 +133,7 @@ void computeRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
 	if(bank_angle_aircraft.modif){
 		local_bank_angle_aircraft = bank_angle_aircraft.value;
+		bank_angle_aircraft.modif = 0;
 	}
 	else{
 		erreur("computeRollCmd/bank_angle_aircraft");
@@ -140,6 +143,7 @@ void computeRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
 	if(global_bank_angle_obj.modif){
 		local_bank_angle_obj = global_bank_angle_obj.value;
+		global_bank_angle_obj.modif = 0;
 	}
 	else{
 		erreur("computeRollCmd/global_bank_angle_obj");
@@ -186,6 +190,7 @@ void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 		    if(pthread_mutex_trylock(&lock_roll_cmd)==0){ //si la commande est accèssible
 		    	if(roll_cmd.modif){
 		        	cmd = roll_cmd.value;
+		        	roll_cmd.modif = 0;
 		        }
 		        else{
 		        	erreur("envoi/roll_cmd");
