@@ -48,13 +48,13 @@ struct varGlobLint heading_objective;
 
 //Variables globales 
 //TODO passer les données dans un pointeur data
-int active = 1; //PA est en mode actif
+int active = 1; //PA est en mode actif *(int*)data
 float _previousTime; //stockage du temps précédent pour calculRoulis (check chronologie des données
 float cmd; //stockage de la commande précédente en cas de bloquage des calculs roulis
 int nb_envoi = 0;
 
 void erreur(char* info){
-	fprintf(stderr,"Probleme %s\n",info);
+	fprintf(stderr,"Probleme %s\n",info); //voir si signal peut faire le job
 }
 
 /* fonction associe a l'arrivée de la vitesse sol */
