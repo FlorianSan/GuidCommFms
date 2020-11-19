@@ -80,7 +80,8 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	float tae = atof(argv[2]);
 	float dist = atof(argv[3]);
 	float back_angle_ref = atof(argv[4]);
-
+	
+	fprintf(stderr,"Donnee %f,%f,%f,%f,\n",xtk,tae,dist,back_angle_ref);
 	
 	const float k1 = 1;
 	const float k2 = 1;
@@ -181,12 +182,26 @@ void Mode(IvyClientPtr app, void *data, int argc, char **argv){
 
 /* fonction associe a l'horloge */
 void envoi(IvyClientPtr app, void *data, int argc, char **argv){
-    int time;
     char tm[50], r_cmd[50];
-    const char* arg = (argc < 1) ? "" : argv[0]; //récupère le temps
-    sscanf(arg, "%d", &time);
+    int time = atof(argv[0]) * 1000;
+    
+    ////////////////////////////
+    /*
+    computeRollCmd();
+    cmd = roll_cmd.value;
+    char retour[100] = "GC_CMD_ROLL =";
+    sprintf(tm, "%d", time);
+    sprintf(r_cmd, "%f", cmd);
+    strcat(retour, tm); //actual time
+    strcat(retour, r_cmd); //commande, ancienne ou pas
+    IvySendMsg ("%s", retour);
+    */
+    ///////////////////////////
+    
+    
     if(time%100==70){ //On calcule la commande durée à définir
-        computeRollCmd();   
+        computeRollCmd(); 
+        fprintf(stderr,"out calcul roll cmd\n");  
     }
     else if(time%100==90){ //envoi tout les 100ms à 90ms
 	    if(nb_envoi < 100 && active){ //la même commande ne doit pas être envoyée pendant plus d'une seconde et le PA doit être actif
@@ -210,6 +225,7 @@ void envoi(IvyClientPtr app, void *data, int argc, char **argv){
 		    strcat(retour, tm); //actual time
 		    strcat(retour, r_cmd); //commande, ancienne ou pas
 		    IvySendMsg ("%s", retour);
+		    fprintf(stderr,"send");
 		}
 		else{active = 0;} //on désactive le PA après 1 seconde
 	}
@@ -250,7 +266,7 @@ int main (int argc, char**argv){
 	//AircraftSetPosition X=-2.0366696227720553e-16 Y=0.8693304535637149 Altitude-ft=0.0 Roll=0.0 Pitch=0.0 Yaw=0.0 Heading=360.0 Airspeed=136.06911447084232 Groundspeed=136.06911447084232
 	
 	/* abonnement  */
-	IvyBindMsg (calculBankAngleObjNav, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) Dist_to_WPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
+	IvyBindMsg (calculBankAngleObjNav, 0, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) DTWPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
 	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4 BANK_ANGLE_REF=5
 	
 	IvyBindMsg (getstate, 0, "^StateVector x=(.*) y=(.*) z=(.*) Vp=(.*) fpa=(.*) psi=(.*) phi=(.*)");//StateVector x=1610.0 y=-3.7719121413738466e-13 z=0.0 Vp=70.0 fpa=0.0 psi=6.283185307179586 phi=0.0
@@ -260,7 +276,7 @@ int main (int argc, char**argv){
 	
 	
 	//on s'abonne à l'holorge qui cadence nos envois
-	IvyBindMsg (envoi, 0, "^Time=(.*)");
+	IvyBindMsg (envoi, 0, "^Time t=(.*)");
 	
 	/* abonnement */
 	IvyBindMsg (stop, 0, "^Stop$");
