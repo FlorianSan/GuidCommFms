@@ -68,6 +68,8 @@ void getposition(IvyClientPtr app, void *data, int argc, char **argv){
 	heading_aircraft.value = atof(argv[6]); //on recupere le cap du modele avion
 	heading_aircraft.modif = 1;
 	pthread_mutex_unlock(&lock_heading_aircraft);
+	fprintf(stderr,"Récepetion de gs %f\n",gs.value);
+	fprintf(stderr,"Récepetion du heading %ld\n",heading_aircraft.value);
 }
 
 /* fonction associe a l'arrivée d'information */
@@ -125,6 +127,7 @@ void getstate(IvyClientPtr app, void *data, int argc, char **argv){
 	bank_angle_aircraft.value = atof(argv[6]); //correspond à phi donc le bank angle mesured
 	bank_angle_aircraft.modif = 1;
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
+	fprintf(stderr,"Récepetion du bank angle aircraft %f\n",bank_angle_aircraft.value);
 }
 
 void computeRollCmd(){
