@@ -52,6 +52,7 @@ int active = 1; //PA est en mode actif
 float _previousTime; //stockage du temps précédent pour calculBankAngleObjNav (check chronologie des données
 float cmd; //stockage de la commande précédente en cas de bloquage des calculs roulis
 int nb_envoi = 0;
+int in_test = 0; //variable globale du mode test
 
 void erreur(char* info){
 	fprintf(stderr,"Probleme %s\n",info); //voir si signal peut faire le job
@@ -68,8 +69,13 @@ void getposition(IvyClientPtr app, void *data, int argc, char **argv){
 	heading_aircraft.value = atof(argv[6]); //on recupere le cap du modele avion
 	heading_aircraft.modif = 1;
 	pthread_mutex_unlock(&lock_heading_aircraft);
-	fprintf(stderr,"Récepetion de gs %f\n",gs.value);
-	fprintf(stderr,"Récepetion du heading %ld\n",heading_aircraft.value);
+	
+	/* Test */
+	if (in_test == 1){
+		printf("getposition : reception du gs %f\n",gs.value);
+		printf("getposition : recepetion du heading %ld\n",heading_aircraft.value);
+	}
+	/////////
 }
 
 /* fonction associe a l'arrivée d'information */
@@ -83,7 +89,11 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	float dist = atof(argv[3]);
 	float back_angle_ref = atof(argv[4]);
 	
-	fprintf(stderr,"Donnee %f,%f,%f,%f,\n",xtk,tae,dist,back_angle_ref);
+	/* Test */
+    	if (in_test == 1){
+    		printf("calculBankAngleNav : réception xtk = %f | tae = %f | dist = %f | back_angle_ref = %f\n", xtk, tae, dist, back_angle_ref);
+    	/////////
+	
 	if(time < _previousTime){ 
 		fprintf(stderr,"Probleme de chronologie des données\n");
 	}
@@ -113,10 +123,14 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	global_bank_angle_obj.modif =1;
 	pthread_mutex_unlock(&lock_bank_angle_obj);
 	
-	_previousTime = time;
-	clock_t end = clock();
-    	unsigned long micro = (end -  begin) * 1000000 / CLOCKS_PER_SEC;
-    	fprintf(stderr,"Temps d'execution : %ld micro seconde\n",micro);
+	/* Test */
+	if (in_test == 1){
+		_previousTime = time;
+		clock_t end = clock();
+    		unsigned long micro = (end -  begin) * 1000000 / CLOCKS_PER_SEC;
+    		printf("Temps d'execution : %ld micro secondes\n",micro);
+    	}
+    	/////////
 }
 
 void calculBankAngleObjHead(){
@@ -128,7 +142,12 @@ void getstate(IvyClientPtr app, void *data, int argc, char **argv){
 	bank_angle_aircraft.value = atof(argv[6]); //correspond à phi donc le bank angle mesured
 	bank_angle_aircraft.modif = 1;
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	fprintf(stderr,"Récepetion du bank angle aircraft %f\n",bank_angle_aircraft.value);
+	
+	/* Test */
+	if (in_test == 1){
+		printf("getstate : Recepetion bank angle aircraft %f\n",bank_angle_aircraft.value);
+	}
+	/////////
 }
 
 void computeRollCmd(){
@@ -244,18 +263,50 @@ void stop(IvyClientPtr app, void *data, int argc, char **argv){
 
 int main (int argc, char**argv){
 
-	/* handling of -b option */
 	const char* bus = 0;
-	if( argc == 3){
+	
+	/* handling of only -t option */
+	if( argc == 2){
+		if(strcmp(argv[1], "-t") == 0){
+			in_test = 1;
+			printf("App ready to be tested\n");
+		}
+		else{
+			printf("Argument invalide\n");
+			exit(1);
+		}
+	}
+	
+	/* handling of only -b option */
+	else if( argc == 3){
 		
 		if(strcmp(argv[1], "-b") == 0){
 			bus = argv[2];
 		}
 		else{
-			printf("Definir un bus -b 127.127.127.127:2010\n");
+			printf("Arguments invalides. Definir un bus -b 127.127.127.127:2010\n");
 			exit(1);
 		}
 	}
+	
+	/*handling of -b en -t options */
+	else if( argc == 4){
+		if((strcmp(argv[1], "-b") == 0) && (strcmp(argv[3], "-t") == 0)){
+			bus = argv[2];
+			in_test = 1;
+			printf("App ready to be tested\n");
+		}
+		else if ((strcmp(argv[1], "-t") == 0) && (strcmp(argv[2], "-b") == 0)){
+			bus = argv[3];
+			in_test = 1;
+			printf("App ready to be tested\n");
+		}
+		else{
+			printf("Arguments invalides. Definir un bus -b 127.127.127.127:2010\n");
+			exit(1);
+		}
+	}
+	
 	else{
 		bus = NULL;
 	}
