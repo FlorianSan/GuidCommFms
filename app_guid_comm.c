@@ -45,11 +45,11 @@ struct varGlobFloat bank_angle_aircraft;
 
 struct varGlobLint heading_aircraft;
 struct varGlobLint heading_objective;
+int active = 1; //PA est en mode actif 
 
 //Variables globales 
-//TODO passer les données dans un pointeur data
-int active = 1; //PA est en mode actif *(int*)data
-float _previousTime; //stockage du temps précédent pour calculRoulis (check chronologie des données
+//TODO passer les données dans un pointeur data *(int*)data
+float _previousTime; //stockage du temps précédent pour calculBankAngleObjNav (check chronologie des données
 float cmd; //stockage de la commande précédente en cas de bloquage des calculs roulis
 int nb_envoi = 0;
 
@@ -76,7 +76,7 @@ void getposition(IvyClientPtr app, void *data, int argc, char **argv){
 void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 
 	clock_t begin = clock();
-	
+	//TODO fonction de check donnee
 	float time = atof(argv[0]);
 	float xtk = atof(argv[1]);
 	float tae = atof(argv[2]);
@@ -84,6 +84,9 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	float back_angle_ref = atof(argv[4]);
 	
 	fprintf(stderr,"Donnee %f,%f,%f,%f,\n",xtk,tae,dist,back_angle_ref);
+	if(time < _previousTime){ 
+		fprintf(stderr,"Probleme de chronologie des données\n");
+	}
 	
 	const float k1 = 1;
 	const float k2 = 1;
@@ -91,10 +94,8 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	float bank_angle_obj;
 	
 
-	//TODO fonction de check donnee
-	if(time < _previousTime){ 
-		fprintf(stderr,"Probleme de chronologie des données\n");
-	}
+	
+	
 	
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
 	if (gs.modif){
