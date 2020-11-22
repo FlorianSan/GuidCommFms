@@ -60,26 +60,37 @@ void erreur(char* info){
 
 /* fonction associe a l'arrivée de la vitesse sol */
 void getposition(IvyClientPtr app, void *data, int argc, char **argv){
+	/* Test */
+	if (in_test == 1)
+		printf("Entree dans getposition\n");
+	/////////
+	
 	pthread_mutex_lock(&lock_gs);
 	gs.value = atof(argv[8]); //on recupere la ground speed du modele avion
 	gs.modif = 1;
+	/* Test */
+	if (in_test == 1)
+		printf("getposition : reception gs = %f\n",gs.value);
+	/////////
 	pthread_mutex_unlock(&lock_gs);
 	
 	pthread_mutex_lock(&lock_heading_aircraft);
 	heading_aircraft.value = atof(argv[6]); //on recupere le cap du modele avion
 	heading_aircraft.modif = 1;
+	/* Test */
+	if (in_test == 1)
+		printf("getposition : recepetion heading = %ld\n",heading_aircraft.value);
+	/////////
 	pthread_mutex_unlock(&lock_heading_aircraft);
 	
-	/* Test */
-	if (in_test == 1){
-		printf("getposition : reception du gs %f\n",gs.value);
-		printf("getposition : recepetion du heading %ld\n",heading_aircraft.value);
-	}
-	/////////
 }
 
 /* fonction associe a l'arrivée d'information */
 void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
+	/* Test */
+	if (in_test == 1)
+		printf("Entree dans calculBankAngleObjNav\n");
+	/////////
 
 	clock_t begin = clock();
 	//TODO fonction de check donnee
@@ -90,8 +101,8 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	float back_angle_ref = atof(argv[4]);
 	
 	/* Test */
-    	if (in_test == 1){
-    		printf("calculBankAngleNav : réception xtk = %f | tae = %f | dist = %f | back_angle_ref = %f\n", xtk, tae, dist, back_angle_ref);
+    	if (in_test == 1)
+    		printf("calculBankAngleNav : reception xtk = %f | tae = %f | dist = %f | back_angle_ref = %f\n", xtk, tae, dist, back_angle_ref);
     	/////////
 	
 	if(time < _previousTime){ 
@@ -111,6 +122,10 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	if (gs.modif){
 	bank_angle_obj = min(back_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(back_angle_ref)*25); //Calcul de la commande de roulis
 	gs.modif = 0;
+	/* Test */
+	if (in_test == 1)
+		printf("calculBankAngleObjNav : calcul bank_angle_obj = %f\n", bank_angle_obj);
+	/////////
 	}
 	else{
 		erreur("calculBankAngleObjNav/gs");
@@ -121,6 +136,10 @@ void calculBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
 	global_bank_angle_obj.value = bank_angle_obj;
 	global_bank_angle_obj.modif =1;
+	/* Test */
+	if (in_test == 1)
+		printf("calculBankAngleObjNav : mise a jour global_bank_angle_obj = %f\n", global_bank_angle_obj.value);
+	/////////
 	pthread_mutex_unlock(&lock_bank_angle_obj);
 	
 	/* Test */
@@ -138,19 +157,25 @@ void calculBankAngleObjHead(){
 	
 }
 void getstate(IvyClientPtr app, void *data, int argc, char **argv){
+	/* Test */
+	if (in_test == 1)
+		printf("Entree dans getstate\n");
+	/////////
 	pthread_mutex_lock(&lock_bank_angle_aircraft);
 	bank_angle_aircraft.value = atof(argv[6]); //correspond à phi donc le bank angle mesured
 	bank_angle_aircraft.modif = 1;
-	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	
 	/* Test */
-	if (in_test == 1){
-		printf("getstate : Recepetion bank angle aircraft %f\n",bank_angle_aircraft.value);
-	}
+	if (in_test == 1)
+		printf("getstate : recepetion bank_angle_aircraft = %f\n", bank_angle_aircraft.value);
 	/////////
+	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
 
 void computeRollCmd(){
+	/* Test */
+	if (in_test == 1)
+		printf("Entree dans computeRollCmd\n");
+	/////////
 
 	float local_bank_angle_aircraft, local_bank_angle_obj;
 	
@@ -158,6 +183,10 @@ void computeRollCmd(){
 	if(bank_angle_aircraft.modif){
 		local_bank_angle_aircraft = bank_angle_aircraft.value;
 		bank_angle_aircraft.modif = 0;
+		/* Test */
+		if (in_test == 1)
+			printf("computeRollCmd : mise a jour local_bank_angle_aircraft = %f\n", local_bank_angle_aircraft);
+		/////////
 	}
 	else{
 		erreur("computeRollCmd/bank_angle_aircraft");
@@ -168,6 +197,10 @@ void computeRollCmd(){
 	if(global_bank_angle_obj.modif){
 		local_bank_angle_obj = global_bank_angle_obj.value;
 		global_bank_angle_obj.modif = 0;
+		/* Test */
+		if (in_test == 1)
+			printf("computeRollCmd : mise a jour local_bank_angle_obj = %f\n", local_bank_angle_obj);
+		/////////
 	}
 	else{
 		erreur("computeRollCmd/global_bank_angle_obj");
@@ -179,32 +212,62 @@ void computeRollCmd(){
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
 	roll_cmd.value = calcul;
 	roll_cmd.modif = 1;
+	/* Test */
+	if (in_test == 1)
+		printf("computeRollCmd : calcul roll_cmd = %f\n", roll_cmd.value);
+	/////////
 	pthread_mutex_unlock(&lock_roll_cmd);
 }
 
 
 
 void Mode(IvyClientPtr app, void *data, int argc, char **argv){
+	/* Test */
+	if (in_test == 1)
+		printf("Entree dans Mode\n");
+	/////////
+
 	char * endPtr;
 	char mode_managed[] = "Managed", mode_selected[] = "SelectedHeading";
 
 	if(strcmp(argv[0],mode_managed) == 0){
 	active = 1;
+	/* Test */
+	if (in_test == 1)
+		printf("Mode : AP actif\n");
+	/////////
 	}
 	else if (strcmp(argv[0],mode_selected) == 0){
 	active = 0;
+	/* Test */
+	if (in_test == 1)
+		printf("Mode : AP inactif\n");
+	/////////
 	pthread_mutex_lock(&lock_heading_objective);
 	heading_objective.value = strtol(argv[1], &endPtr, 10 ); 
 	heading_objective.modif = 1;
+	/* Test */
+	if (in_test == 1)
+		printf("Mode : calcul heading_objective = %ld\n", heading_objective.value);
+	/////////
 	pthread_mutex_unlock(&lock_heading_objective);
 	}
 	else {
 	active = 0;
+	/* Test */
+	if (in_test == 1)
+		printf("Mode : AP inactif\n");
+	/////////
 	}
 }
 
 /* fonction associe a l'horloge */
 void envoi(IvyClientPtr app, void *data, int argc, char **argv){
+    /* Test */
+    if (in_test == 1)
+	printf("Entree dans envoi\n");
+    /////////
+
     char tm[50], r_cmd[50];
     int time = atof(argv[0]) * 1000;
     
