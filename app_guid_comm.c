@@ -134,10 +134,10 @@ void computeBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv)
 	pthread_mutex_unlock(&lock_gs);
 	
 	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
-	global_bank_angle_obj.value = bank_angle_obj;
-	global_bank_angle_obj.modif =1;
 	//Si le PA est actif, c'est lui qui modifie la valeur du bank angle obkective
 	if(active == 1){
+	    global_bank_angle_obj.value = bank_angle_obj;
+	    global_bank_angle_obj.modif =1;
 	    pthread_cond_signal(&objReady);
 	}
 	/* Test */
