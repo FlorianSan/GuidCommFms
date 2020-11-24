@@ -14,7 +14,7 @@
 #define min(a,b) (a<=b?a:b) 
 #define sgn(x) ((x>0)-(x<0))
 
-
+pthread_cond_t objReady = PTHREAD_COND_INITIALIZER;
 
 pthread_mutex_t lock_roll_cmd;
 pthread_mutex_t lock_bank_angle_obj;
@@ -136,6 +136,10 @@ void computeBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv)
 	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
 	global_bank_angle_obj.value = bank_angle_obj;
 	global_bank_angle_obj.modif =1;
+	//Si le PA est actif, c'est lui qui modifie la valeur du bank angle obkective
+	if(active == 1){
+	    pthread_cond_signal(&objReady);
+	}
 	/* Test */
 	if (in_test == 1)
 		printf("computeBankAngleObjNav : mise a jour global_bank_angle_obj = %f\n", global_bank_angle_obj.value);
@@ -154,6 +158,10 @@ void computeBankAngleObjNav(IvyClientPtr app, void *data, int argc, char **argv)
 
 void computeBankAngleObjHead(){
 	fprintf(stderr,"Ne fait rien");
+	//Si on est en mode hdg (PA inactif), c'est lui qui modifie la valeur du bank angle obkective
+	/*if(active == 0){
+	    pthread_cond_signal(&objReady);
+	}*/
 	
 }
 void getState(IvyClientPtr app, void *data, int argc, char **argv){
@@ -179,6 +187,24 @@ void computeRollCmd(){
 
 	float local_bank_angle_aircraft, local_bank_angle_obj;
 	
+	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
+	//on attend que l'on est calculé le bank angle objective. Peut-être le débloquer par un temps d'attente (?)
+	while (1){
+	    pthread_cond_wait(&objReady, &lock_bank_angle_obj);
+	}
+	if(global_bank_angle_obj.modif){
+		local_bank_angle_obj = global_bank_angle_obj.value;
+		global_bank_angle_obj.modif = 0;
+		/* Test */
+		if (in_test == 1)
+			printf("computeRollCmd : mise a jour local_bank_angle_obj = %f\n", local_bank_angle_obj);
+		/////////
+	}
+	else{
+		error("computeRollCmd/global_bank_angle_obj");
+	}
+		pthread_mutex_unlock(&lock_bank_angle_obj);
+	
 	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
 	if(bank_angle_aircraft.modif){
 		local_bank_angle_aircraft = bank_angle_aircraft.value;
@@ -192,20 +218,6 @@ void computeRollCmd(){
 		error("computeRollCmd/bank_angle_aircraft");
 	}
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	
-	pthread_mutex_lock(&lock_bank_angle_obj); // protection de la variable globale bank_angle
-	if(global_bank_angle_obj.modif){
-		local_bank_angle_obj = global_bank_angle_obj.value;
-		global_bank_angle_obj.modif = 0;
-		/* Test */
-		if (in_test == 1)
-			printf("computeRollCmd : mise a jour local_bank_angle_obj = %f\n", local_bank_angle_obj);
-		/////////
-	}
-	else{
-		error("computeRollCmd/global_bank_angle_obj");
-	}
-		pthread_mutex_unlock(&lock_bank_angle_obj);
 	
 	float calcul = pid(local_bank_angle_obj, local_bank_angle_aircraft); //calcul du pid coeff défini dans pid.c
 	
@@ -270,6 +282,29 @@ void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
 
     char tm[50], r_cmd[50];
     int time = atof(argv[0]) * 1000;
+    //si pas d'erreur dans les données depuis plus d'une seconde: 
+    pthread_mutex_lock(&lock_roll_cmd); //récupère la valeur de commande à voir si on refait comme en bas
+    if(roll_cmd.modif){
+    	cmd = roll_cmd.value;
+    	roll_cmd.modif = 0;
+    }
+    pthread_mutex_unlock(&lock_roll_cmd);
+    
+    //construction du message à envoyer
+    char retour[100] = "GC_CMD_ROLL ="; 
+    sprintf(tm, "%d", time);
+    sprintf(r_cmd, "%f", cmd);
+    strcat(retour, tm);                                     //actual time
+    strcat(retour, r_cmd);                                  //commande, ancienne ou pas
+    IvySendMsg ("%s", retour);
+    fprintf(stderr,"send");
+    
+    //lance la fonction de calcul d'angle objectif en mode heading
+    if(active == 0){
+        computeBankAngleObjHead();
+    }
+    //lance la fonction de calcul de roulis
+    computeRollCmd(); 
     
     ////////////////////////////
     /*
