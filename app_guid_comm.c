@@ -160,8 +160,8 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 	(*(variables*)data).param = time;
 	
-	const float k1 = 1;
-	const float k2 = 1;
+	const float k1 = -0.0044;
+	const float k2 = -1.5;
 	
 	float bank_angle_obj_nav, bank_angle_obj_hdg;
 	
