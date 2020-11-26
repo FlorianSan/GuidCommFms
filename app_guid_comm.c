@@ -1,62 +1,10 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <getopt.h>
-#include <ivy.h>
-#include <ivyloop.h>
-#include <errno.h>  
-#include <pthread.h>
-#include <string.h>
-#include <time.h>
-
-#include "pid.h"
-
-//MACRO
-#define min(a,b) (a<=b?a:b) 
-#define sgn(x) ((x>0)-(x<0))
+#include "app_guid_comm.h"
 
 
-pthread_mutex_t lock_roll_cmd;
-pthread_mutex_t lock_bank_angle_aircraft;
-pthread_mutex_t lock_gs;
-pthread_mutex_t lock_heading_aircraft;
-pthread_mutex_t lock_heading_objective;
-
-typedef struct variables variables;
-struct variables{
-    int test;
-    float param;
-    
-};
-
-struct varGlobFloat
-{
-	float value;
-	int modif; //1 si l'info est produite 0 si l'info est consommé
-	
-};
-
-struct varGlobLint
-{
-	long int value;
-	int modif; //1 si l'info est produite 0 si l'info est consommé
-	
-};
-
-//Variables globales protégées des accès concurents
-struct varGlobFloat roll_cmd; // commande de roulis
-struct varGlobFloat global_bank_angle_obj;
-struct varGlobFloat gs; //ground speed
-struct varGlobFloat bank_angle_aircraft;
-
-struct varGlobLint heading_aircraft;
-struct varGlobLint heading_objective;
 int active = 1; //PA est en mode actif à protéger
 
-void error(char* info){
-	fprintf(stderr,"Probleme %s\n",info); //voir si signal peut faire le job
-}
 
-//la fonction getPosition récupère la ground speed et le cap du modèle avion
+//Récupère la ground speed et le cap du modèle avion
 /* fonction associe a l'arrivée de la vitesse sol */
 void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
@@ -85,7 +33,7 @@ void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
 	
 }
 
-//la fonction getState récupère le bank angle mesuré du modèle avion
+//Récupère le bank angle mesuré du modèle avion
 void getState(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
 	/* Test */
@@ -102,42 +50,7 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
 
-//la fonction computeRollCmd crée une commande de vitesse de roulis à partir du bank angle souhaité et du bank angle mesuré
-void computeRollCmd(float bank_angle_obj, int in_test){
-	/* Test */
-	if (in_test == 1)
-		printf("Entree dans computeRollCmd\n");
-	/////////
-
-	float local_bank_angle_aircraft;
-
-	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
-	if(bank_angle_aircraft.modif){
-		local_bank_angle_aircraft = bank_angle_aircraft.value;
-		bank_angle_aircraft.modif = 0;
-		/* Test */
-		if (in_test == 1)
-			printf("computeRollCmd : mise a jour local_bank_angle_aircraft = %f\n", local_bank_angle_aircraft);
-		/////////
-	}
-	else{
-		error("computeRollCmd/bank_angle_aircraft");
-	}
-	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	
-	float calcul = pid(bank_angle_obj, local_bank_angle_aircraft); //calcul du pid coeff défini dans pid.c
-	
-	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
-	roll_cmd.value = calcul;
-	roll_cmd.modif = 1;
-	/* Test */
-	if (in_test == 1)
-		printf("computeRollCmd : calcul roll_cmd = %f\n", roll_cmd.value);
-	/////////
-	pthread_mutex_unlock(&lock_roll_cmd);
-}
-
-//la fonction computeBankAngleObj calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
+//Calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
 /* fonction associe a l'arrivée d'information */
 void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
@@ -164,21 +77,16 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 	(*(variables*)data).param = time;
 	
-	const float k1 = -0.0044;
-	const float k2 = -1.5;
-	
 	float bank_angle_obj_nav, bank_angle_obj_hdg;
 	
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
 	//dans le mode managé
 	if (gs.modif){
-	//TODO calculer le K2 pour un tae/gs
-	bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae, sgn(bank_angle_ref)*25); //Calcul de la commande 
-	//bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(bank_angle_ref)*25); //Calcul de la commande 
+	bank_angle_obj_nav = computeBankAngleObjNav(bank_angle_ref, xtk, tae); //Calcul de la commande 
 	gs.modif = 0;
 	/* Test */
 	if (in_test == 1)
-		printf("computeBankAngleObjNav : calcul bank_angle_obj = %f\n", bank_angle_obj_nav);
+		printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj_nav);
 	/////////
 	}
 	else{
@@ -187,7 +95,8 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 	pthread_mutex_unlock(&lock_gs);
 	
-	//TODO LE MODE HDG 
+	//TODO LE MODE HDG
+	// avec computeBankAngleObjHdg
 	
 	//Appelle la fonction computeRollCmd avec le paramètre suivant le mode enclenché
 	if(active){
@@ -207,7 +116,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
     	/////////
 }
 
-//la fonction getMode permet d'établir si on est en mode Nav ou Hdg (resp. Selected ou Managed)
+//Etablir si on est en mode Nav ou Hdg (resp. Selected ou Managed)
 void getMode(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
 	/* Test */
@@ -249,7 +158,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 }
 
-//la fonction sendRollCmd permet d'envoyer la commande de vitesse de roulis
+//Envoie la commande de vitesse de roulis
 /* fonction associe a l'horloge */
 void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
