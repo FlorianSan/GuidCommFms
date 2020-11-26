@@ -25,6 +25,7 @@ typedef struct variables variables;
 struct variables{
     int test;
     float param;
+    
 };
 
 struct varGlobFloat
@@ -171,7 +172,9 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
 	//dans le mode managé
 	if (gs.modif){
-	bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(bank_angle_ref)*25); //Calcul de la commande de roulis
+	//TODO calculer le K2 pour un tae/gs
+	bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae, sgn(bank_angle_ref)*25); //Calcul de la commande 
+	//bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(bank_angle_ref)*25); //Calcul de la commande 
 	gs.modif = 0;
 	/* Test */
 	if (in_test == 1)
@@ -273,7 +276,7 @@ void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
     strcat(retour, tm);                                     //actual time
     strcat(retour, r_cmd);                                  //commande, ancienne ou pas
     IvySendMsg ("%s", retour);
-    fprintf(stderr,"send");
+    //fprintf(stderr,"send");
     
     ////////////////////////////
     /*
