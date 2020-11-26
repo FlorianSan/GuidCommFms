@@ -66,7 +66,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	float tae = atof(argv[2]);
 	float dist = atof(argv[3]);
 	float bank_angle_ref = atof(argv[4]);
-	
+		
 	/* Test */
     	if (in_test == 1)
     		printf("computeBankAngleNav : reception xtk = %f | tae = %f | dist = %f | bank_angle_ref = %f\n", xtk, tae, dist, bank_angle_ref);
@@ -179,13 +179,15 @@ void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
     // TODO Gérer les erreurs
     
     //construction du message à envoyer
-    char retour[100] = "GC_CMD_ROLL ="; 
-    sprintf(tm, "%d", time);
+    char retour[100] = "APLatControl rollRate="; 
     sprintf(r_cmd, "%f", (*(variables*)data).param);
-    strcat(retour, tm);                                     //actual time
     strcat(retour, r_cmd);                                  //commande, ancienne ou pas
     IvySendMsg ("%s", retour);
-    //fprintf(stderr,"send");
+    
+     /* Test */
+    if (in_test == 1)
+	printf("rollRate= %f time = %d\n", (*(variables*)data).param, time);
+    /////////
     
     ////////////////////////////
     /*
