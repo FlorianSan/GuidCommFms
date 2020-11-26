@@ -55,6 +55,7 @@ void error(char* info){
 	fprintf(stderr,"Probleme %s\n",info); //voir si signal peut faire le job
 }
 
+//la fonction getPosition récupère la ground speed et le cap du modèle avion
 /* fonction associe a l'arrivée de la vitesse sol */
 void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
@@ -83,6 +84,7 @@ void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
 	
 }
 
+//la fonction getState récupère le bank angle mesuré du modèle avion
 void getState(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
 	/* Test */
@@ -99,6 +101,7 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
 
+//la fonction computeRollCmd crée une commande de vitesse de roulis à partir du bank angle souhaité et du bank angle mesuré
 void computeRollCmd(float bank_angle_obj, int in_test){
 	/* Test */
 	if (in_test == 1)
@@ -133,7 +136,7 @@ void computeRollCmd(float bank_angle_obj, int in_test){
 	pthread_mutex_unlock(&lock_roll_cmd);
 }
 
-
+//la fonction computeBankAngleObj calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
 /* fonction associe a l'arrivée d'information */
 void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
@@ -201,7 +204,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
     	/////////
 }
 
-
+//la fonction getMode permet d'établir si on est en mode Nav ou Hdg (resp. Selected ou Managed)
 void getMode(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
 	/* Test */
@@ -243,6 +246,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 }
 
+//la fonction sendRollCmd permet d'envoyer la commande de vitesse de roulis
 /* fonction associe a l'horloge */
 void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
