@@ -53,7 +53,7 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 //Calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
 /* fonction associe a l'arrivée d'information */
 void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
-    int in_test = (*(variables*)data).test;
+    	int in_test = (*(variables*)data).test;
 	/* Test */
 	if (in_test == 1)
 		printf("Entree dans computeBankAngleObjNav\n");

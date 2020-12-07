@@ -23,7 +23,7 @@ void computeRollCmd(float bank_angle_obj, int in_test){
 	}
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
-	float calcul = pid(bank_angle_obj, local_bank_angle_aircraft); //calcul du pid coeff défini dans pid.c
+	float calcul = K3 * (bank_angle_obj - local_bank_angle_aircraft);
 	
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
 	roll_cmd.value = calcul;
@@ -37,18 +37,9 @@ void computeRollCmd(float bank_angle_obj, int in_test){
 
 float computeBankAngleObjNav(float bank_angle_ref, float xtk, float tae){
 	float bank_angle_obj_nav;
-	const float k1 = -0.0044;
-	const float k2 = -1.5;
 	
-	//TODO calculer le K2 pour un tae/gs
+	bank_angle_obj_nav = min(bank_angle_ref + K1 * xtk/gs.value + K2 * tae, sgn(bank_angle_ref)*25); //Calcul de la commande1
 	
-	//fonction test
-	//bank_angle_obj_nav = min(bank_angle_ref, sgn(bank_angle_ref)*25);
-	
-	//fonction vrai
-	bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae, sgn(bank_angle_ref)*25); //Calcul de la commande 
-	
-	//bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(bank_angle_ref)*25); //Calcul de la commande
 	return bank_angle_obj_nav;
 }
 
