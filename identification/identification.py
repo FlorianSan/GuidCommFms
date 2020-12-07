@@ -58,7 +58,7 @@ def commande(agent, *larg):
     if(float(larg[0]) == 0):
         IvySendMsg("APLatControl rollRate=0")
     if(float(larg[0]) == 2):
-        IvySendMsg("APLatControl rollRate=1") #de 2s à 3s 1°/s
+        IvySendMsg("APLatControl rollRate=1") #de 2s à 3s 1°/s probleme commande en rad/s
     if(float(larg[0]) == 2.5):
         IvySendMsg("APLatControl rollRate=0") #de 3s à 4s 0°/s angle cst
     if(float(larg[0]) == 4):

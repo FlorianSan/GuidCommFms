@@ -4,11 +4,11 @@
 #define UMAX 3  //valeur max de roulis
 #define UMIN -3 //valeur min de roulis
 
-#define KP 7    // proportional gain
+#define KP 1    // proportional gain
 #define KI 0    //integral gain
-#define KD 12    //derivative gain
+#define KD 0    //derivative gain
 
-#define N 20    //filter coefficients
+#define N 0    //filter coefficients
 #define TS 0.01            
 
 #define A0 (1+N*TS)

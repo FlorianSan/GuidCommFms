@@ -41,7 +41,13 @@ float computeBankAngleObjNav(float bank_angle_ref, float xtk, float tae){
 	const float k2 = -1.5;
 	
 	//TODO calculer le K2 pour un tae/gs
+	
+	//fonction test
+	//bank_angle_obj_nav = min(bank_angle_ref, sgn(bank_angle_ref)*25);
+	
+	//fonction vrai
 	bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae, sgn(bank_angle_ref)*25); //Calcul de la commande 
+	
 	//bank_angle_obj_nav = min(bank_angle_ref + k1 * xtk + k2 * tae/gs.value, sgn(bank_angle_ref)*25); //Calcul de la commande
 	return bank_angle_obj_nav;
 }

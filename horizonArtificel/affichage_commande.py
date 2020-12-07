@@ -89,7 +89,7 @@ if __name__ == '__main__':
     IvyStart(sivybus)
     
     #StateVector x=0 y=0 z=0 Vp=0 fpa=10 psi=0 phi=10
-    IvyBindMsg(changeRollCmd, "^IPLatControl rollRate=(.*)")
+    IvyBindMsg(changeRollCmd, "^APLatControl rollRate=(.*)")
     #IPLatControl rollRate=1
     
     IvyBindMsg(changeNz, "^IPNzControl nz=(.*)")
