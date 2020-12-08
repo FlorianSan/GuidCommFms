@@ -25,9 +25,17 @@ pthread_mutex_t lock_heading_objective;
 pthread_mutex_t lock_fpa;
 
 typedef struct variables variables;
-struct variables{
-    int test;
-    float param;  
+struct variables{ //structure pour faire passer les infos dans computeBankAngleObj
+    float time;
+    int cpt_time;
+    float xtk;
+    int cpt_xtk;
+    float tae;
+    int cpt_tae;
+    float dist;
+    int cpt_dist;
+    float bank_angle_ref;
+    int cpt_bank_angle_ref;
 };
 
 struct varGlobFloat
@@ -58,7 +66,7 @@ void getPosition(IvyClientPtr app, void *data, int argc, char **argv);
 void getState(IvyClientPtr app, void *data, int argc, char **argv);
 void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv);
 void getMode(IvyClientPtr app, void *data, int argc, char **argv);
-void sendCmd(IvyClientPtr app, void *data, int argc, char **argv);
+void send(IvyClientPtr app, void *data, int argc, char **argv);
 void stop(IvyClientPtr app, void *data, int argc, char **argv);
 int main (int argc, char**argv);
 
