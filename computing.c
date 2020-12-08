@@ -37,16 +37,19 @@ void computeRollCmd(float bank_angle_obj, int in_test){
 
 float computeBankAngleObjNav(float bank_angle_ref, float xtk, float tae){
 	float bank_angle_obj_nav;
+	float K1=0.6295; //Gain relatif à la XTK \frac{V_{p}}{g n_{z} \tau_{phi} \tau_{xtk}}
+	float K2=0.0105; //Gain relatif à la TAE \frac{V_{p}}{g n_{z} \tau_{phi}}
 	
 	bank_angle_obj_nav = min(bank_angle_ref + K1 * xtk/gs.value + K2 * tae, sgn(bank_angle_ref)*25); //Calcul de la commande1
 	
 	return bank_angle_obj_nav;
 }
 
-/*float computeBankAngleObjHead(?){
+float computeBankAngleObjHdg(long int heading_aircraft, long int heading_objective){
 	float bank_angle_obj_hdg;
+	float K4= 0.1;
 	
-	//TODO calcul en HDG
+	bank_angle_obj_hdg = K4 * (heading_objective - heading_aircraft);
 	
 	return bank_angle_obj_hdg;
-}*/
+}

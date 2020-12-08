@@ -82,12 +82,24 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
 	//dans le mode managé
 	if (gs.modif){
-	bank_angle_obj_nav = computeBankAngleObjNav(bank_angle_ref, xtk, tae); //Calcul de la commande 
-	gs.modif = 0;
-	/* Test */
-	if (in_test == 1)
-		printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj_nav);
-	/////////
+		if(active){
+			bank_angle_obj_nav = computeBankAngleObjNav(bank_angle_ref, xtk, tae); //Calcul de la commande 
+		}
+		else if (active == 0){
+			pthread_mutex_lock(&lock_heading_aircraft);
+			pthread_mutex_lock(&lock_heading_objective);
+			bank_angle_obj_hdg = computeBankAngleObjHdg(heading_aircraft.value, heading_objective.value);
+			heading_aircraft.modif = 0;//on a utilisé la donnée
+			heading_objective.modif = 0;//on a utilisé la donnée
+			pthread_mutex_unlock(&lock_heading_aircraft);
+			pthread_mutex_unlock(&lock_heading_objective);
+		}
+		gs.modif = 0;
+		/* Test */
+		if (in_test == 1){
+			printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj_nav);
+		}
+		/////////
 	}
 	else{
 		error("computeBankAngleObjNav/gs");
@@ -246,7 +258,7 @@ void stop(IvyClientPtr app, void *data, int argc, char **argv){
 int main (int argc, char**argv){
 
 	const char* bus = 0;
-    int nb_sent = 0; //A voir avec la fonction sendRollCmd
+    	int nb_sent = 0; //A voir avec la fonction sendRollCmd
 	int in_test = 0; //variable globale du mode test
 	struct variables _previousTime;
 	struct variables cmd;

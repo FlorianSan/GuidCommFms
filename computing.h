@@ -4,8 +4,9 @@
 #include "errors.h"
 #include "app_guid_comm.h"
 
-#define K1 0.6295 //Gain relatif à la XTK \frac{V_{p}}{g n_{z} \tau_{phi} \tau_{xtk}}
-#define K2 0.0105 //Gain relatif à la TAE \frac{V_{p}}{g n_{z} \tau_{phi}}
+#define tau_phi 3
+#define tau_xtk 3
+
 #define K3 1/3 //Gain relatif à la dynamique de phi
 
 //MACRO
@@ -18,7 +19,7 @@ void computeRollCmd(float bank_angle_obj, int in_test);
 
 extern float computeBankAngleObjNav(float bank_angle_ref, float xtk, float tae);
 
-//extern float computeBankAngleObjHdg(?);
+extern float computeBankAngleObjHdg(long int heading_aircraft, long int heading_objective);
 
 
 #endif
