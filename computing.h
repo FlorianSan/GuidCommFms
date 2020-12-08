@@ -3,6 +3,7 @@
 
 #include "errors.h"
 #include "app_guid_comm.h"
+#include <math.h>
 
 #define tau_phi 3
 #define tau_xtk 3
@@ -15,7 +16,7 @@
 
 
 //Crée une commande de vitesse de roulis à partir du bank angle souhaité et du bank angle mesuré
-void computeRollCmd(float bank_angle_obj, int in_test);
+void computeCmd(float bank_angle_obj, int in_test);
 
 extern float computeBankAngleObjNav(float bank_angle_ref, float xtk, float tae);
 

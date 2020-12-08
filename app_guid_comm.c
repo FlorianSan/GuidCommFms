@@ -22,14 +22,14 @@ void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
 	/////////
 	pthread_mutex_unlock(&lock_gs);
 	
-	pthread_mutex_lock(&lock_heading_aircraft);
-	heading_aircraft.value = atof(argv[6]); //on recupere le cap du modele avion
-	heading_aircraft.modif = 1;
+	pthread_mutex_lock(&lock_fpa);
+	fpa.value = atof(argv[6]); //on recupere le cap du modele avion
+	fpa.modif = 1;
 	/* Test */
 	if (in_test == 1)
-		printf("getPosition : recepetion heading = %ld\n",heading_aircraft.value);
+		printf("getPosition : recepetion fpa = %f\n",fpa.value);
 	/////////
-	pthread_mutex_unlock(&lock_heading_aircraft);
+	pthread_mutex_unlock(&lock_fpa);
 	
 }
 
@@ -40,6 +40,9 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	if (in_test == 1)
 		printf("Entree dans getState\n");
 	/////////
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//récupération de  phi
+	/////////////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_bank_angle_aircraft);
 	bank_angle_aircraft.value = atof(argv[6]); //correspond à phi donc le bank angle mesured
 	bank_angle_aircraft.modif = 1;
@@ -48,6 +51,18 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 		printf("getState : recepetion bank_angle_aircraft = %f\n", bank_angle_aircraft.value);
 	/////////
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
+	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//récupération du fpa
+	/////////////////////////////////////////////////////////////////////////////////////////
+	pthread_mutex_lock(&lock_fpa);
+	fpa.value = atof(argv[4]); //correspond au fpa
+	fpa.modif = 1;
+	/* Test */
+	if (in_test == 1)
+		printf("getState : recepetion fpa = %f\n", fpa.value);
+	/////////
+	pthread_mutex_unlock(&lock_fpa);
 }
 
 //Calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
@@ -97,7 +112,12 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		gs.modif = 0;
 		/* Test */
 		if (in_test == 1){
-			printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj_nav);
+			if(active){
+				printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj_nav);
+			}
+			else if (active == 0){
+				printf("computeBankAngleObjHdg : calcul bank_angle_obj_hdg = %f\n", bank_angle_obj_hdg);
+			}
 		}
 		/////////
 	}
@@ -110,12 +130,12 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	//TODO LE MODE HDG
 	// avec computeBankAngleObjHdg
 	
-	//Appelle la fonction computeRollCmd avec le paramètre suivant le mode enclenché
+	//Appelle la fonction computeCmd avec le paramètre suivant le mode enclenché
 	if(active){
-	    computeRollCmd(bank_angle_obj_nav, in_test);
+	    computeCmd(bank_angle_obj_nav, in_test);
 	}
 	else if (active == 0){
-	    computeRollCmd(bank_angle_obj_hdg, in_test);
+	    computeCmd(bank_angle_obj_hdg, in_test);
 	}
 	
 	/* Test */
@@ -170,18 +190,22 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 }
 
-//Envoie la commande de vitesse de roulis
+//Envoie les commande à l'avion
 /* fonction associe a l'horloge */
-void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
+void sendCmd(IvyClientPtr app, void *data, int argc, char **argv){
     int in_test = (*(variables*)data).test;
     /* Test */
     if (in_test == 1)
 	printf("Entree dans sendRollCmd\n");
     /////////
 
-    char tm[50], r_cmd[50];
+    char tm[50], rollCommande[100], nxCommande[100], nzCommande[100];
     int time = atof(argv[0]) * 1000;
     
+    
+	/////////////////////////////////////////////////////////////////////////////////
+	//Envoi de roll cmd
+	/////////////////////////////////////////////////////////////////////////////////
     pthread_mutex_lock(&lock_roll_cmd); //récupère la valeur de commande à voir si on refait un try
     if(roll_cmd.modif){
     	(*(variables*)data).param = roll_cmd.value;
@@ -190,20 +214,38 @@ void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
     pthread_mutex_unlock(&lock_roll_cmd);
     // TODO Gérer les erreurs
     
-    //construction du message à envoyer
-    char retour[100] = "APLatControl rollRate="; 
-    sprintf(r_cmd, "%f", (*(variables*)data).param);
-    strcat(retour, r_cmd);                                  //commande, ancienne ou pas
-    IvySendMsg ("%s", retour);
+    sprintf(rollCommande, "APLatControl rollRate=%f", (*(variables*)data).param); //commande, ancienne ou pas
+    IvySendMsg ("%s", rollCommande);
     
      /* Test */
     if (in_test == 1)
 	printf("rollRate= %f time = %d\n", (*(variables*)data).param, time);
     /////////
     
+    
+    /////////////////////////////////////////////////////////////////////////////////
+	//Envoi de nx cmd
+	/////////////////////////////////////////////////////////////////////////////////
+	pthread_mutex_lock(&lock_nx_cmd); // protection de la variable globale nx_cmd
+    sprintf(nxCommande, "APNxControl nx=%f", nx_cmd.value); //commande, ancienne ou pas
+    IvySendMsg ("%s", nxCommande);
+    nx_cmd.modif = 0;
+    pthread_mutex_unlock(&lock_nx_cmd);
+    
+    
+	/////////////////////////////////////////////////////////////////////////////////
+	//Envoi de ny cmd
+	/////////////////////////////////////////////////////////////////////////////////
+	pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
+	sprintf(nzCommande, "APNzControl nz=%f", nz_cmd.value); //commande, ancienne ou pas
+    IvySendMsg ("%s", nzCommande);
+    nz_cmd.modif = 0;
+    pthread_mutex_unlock(&lock_nz_cmd);
+    
+    
     ////////////////////////////
     /*
-    computeRollCmd();
+    computeCmd();
     cmd = roll_cmd.value;
     char retour[100] = "GC_CMD_ROLL =";
     sprintf(tm, "%d", time);
@@ -216,7 +258,7 @@ void sendRollCmd(IvyClientPtr app, void *data, int argc, char **argv){
     
     /* 
     if(time%100==70){ //On calcule la commande durée à définir
-        computeRollCmd(); 
+        computeCmd(); 
         fprintf(stderr,"out calcul roll cmd\n");  
     }
     else if(time%100==90){ //envoi tout les 100ms à 90ms
@@ -334,7 +376,7 @@ int main (int argc, char**argv){
 	
 	
 	//on s'abonne à l'holorge qui cadence nos envois
-	IvyBindMsg (sendRollCmd, &cmd, "^Time t=(.*)");
+	IvyBindMsg (sendCmd, &cmd, "^Time t=(.*)");
 	
 	/* abonnement */
 	IvyBindMsg (stop, 0, "^Stop$");

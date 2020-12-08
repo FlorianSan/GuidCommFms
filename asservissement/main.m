@@ -23,14 +23,18 @@ epsTimeScale = 1/5;
 
 
 tauPhi = 3; %sec
-k3 = 1/tauPhi;
-phiMax = 30*DEG2RAD;
+
 
 tauCap = tauPhi/epsTimeScale; %sec
 k1 = Vp/(g*nze*tauCap);
 
 tauEy = 4*tauCap; %tauCap/epsTimeScale %sec
 k2 = Vp/(g*nze*tauCap*tauEy);
+
+k3 = 1/tauPhi;
+phiMax = 30*DEG2RAD;
+
+
 
 
 if false
