@@ -23,6 +23,7 @@ pthread_mutex_t lock_gs;
 pthread_mutex_t lock_heading_aircraft;
 pthread_mutex_t lock_heading_objective;
 pthread_mutex_t lock_fpa;
+pthread_mutex_t lock_ap_state;
 
 typedef struct variables variables;
 struct variables{ //structure pour faire passer les infos dans computeBankAngleObj
@@ -62,7 +63,7 @@ struct varGlobFloat fpa;
 struct varGlobLint heading_aircraft;
 struct varGlobLint heading_objective;
 
-int active; //PA à protéger
+int ap_state; //PA à protéger
 int in_test; //variable globale du mode test
 
 void getPosition(IvyClientPtr app, void *data, int argc, char **argv);
@@ -71,6 +72,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv);
 void getMode(IvyClientPtr app, void *data, int argc, char **argv);
 void send(IvyClientPtr app, void *data, int argc, char **argv);
 void stop(IvyClientPtr app, void *data, int argc, char **argv);
+int start(const char* bus, float sendCmd, struct variables varComputeBankAngleObj);
 int main (int argc, char**argv);
 
 #endif

@@ -10,14 +10,15 @@ void error(char* function, char* param, int nb_errors){
 		if (nb_errors == 3)
 		{
 			// voir si il faut remettre le compteur à 0?
-			active = -1;
+			ap_state = -1;
+			//Il est possible de faire un redemarage à chaud grace a un commande IvyStop(); //(florian)
 			//on envoie où qu'on à désactivé le PA?
 		}
 	}
 	else if (strcmp(function, "computeCmd") || strcmp(function, "computeBankAngleObjNav"))
 	{
 		if (nb_errors == -3)
-			active = -1;
+			ap_state = -1;
 	}	
 }
 

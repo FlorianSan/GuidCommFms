@@ -18,14 +18,14 @@ void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
 	/////////
 	pthread_mutex_unlock(&lock_gs);
 	
-	pthread_mutex_lock(&lock_fpa);
-	fpa.value = atof(argv[6]); //on recupere le cap du modele avion
-	fpa.modif = 1;
+	pthread_mutex_lock(&lock_heading_aircraft);
+	heading_aircraft.value = atof(argv[6]); //on recupere le cap du modele avion
+	heading_aircraft.modif = 1;
 	/* Test */
 	if (in_test == 1)
-		printf("getPosition : recepetion fpa = %f\n",fpa.value);
+		printf("getPosition : recepetion heading = %ld\n",heading_aircraft.value);
 	/////////
-	pthread_mutex_unlock(&lock_fpa);
+	pthread_mutex_unlock(&lock_heading_aircraft);
 	
 }
 
@@ -92,10 +92,10 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
 	//dans le mode managé
 	if (gs.modif){
-		if(active){
+		if(ap_state){
 			bank_angle_obj_nav = computeBankAngleObjNav(bank_angle_ref, xtk, tae); //Calcul de la commande 
 		}
-		else if (active == 0){
+		else if (ap_state == 0){
 			pthread_mutex_lock(&lock_heading_aircraft);
 			pthread_mutex_lock(&lock_heading_objective);
 			bank_angle_obj_hdg = computeBankAngleObjHdg(heading_aircraft.value, heading_objective.value);
@@ -107,10 +107,10 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		gs.modif = 0;
 		/* Test */
 		if (in_test == 1){
-			if(active){
+			if(ap_state){
 				printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj_nav);
 			}
-			else if (active == 0){
+			else if (ap_state == 0){
 				printf("computeBankAngleObjHdg : calcul bank_angle_obj_hdg = %f\n", bank_angle_obj_hdg);
 			}
 		}
@@ -127,10 +127,10 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	
 	//Appelle la fonction computeCmd avec le paramètre suivant le mode enclenché
     //Pas utile ?? (Lucas)
-	if(active){
+	if(ap_state){
 	    computeCmd(bank_angle_obj_nav, in_test);
 	}
-	else if (active == 0){
+	else if (ap_state == 0){
 	    computeCmd(bank_angle_obj_hdg, in_test);
 	}
 	
@@ -155,14 +155,14 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	char mode_managed[] = "Managed", mode_selected[] = "SelectedHeading";
 
 	if(strcmp(argv[0],mode_managed) == 0){
-	active = 1;
+	ap_state = 1;
 	/* Test */
 	if (in_test == 1)
 		printf("getMode : AP actif\n");
 	/////////
 	}
 	else if (strcmp(argv[0],mode_selected) == 0){
-	active = 0;
+	ap_state = 0;
 	/* Test */
 	if (in_test == 1)
 		printf("getMode : AP inactif\n");
@@ -177,7 +177,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_unlock(&lock_heading_objective);
 	}
 	else {
-	active = 0;
+	ap_state = 0;
 	/* Test */
 	if (in_test == 1)
 		printf("getMode : AP inactif\n");
@@ -199,7 +199,7 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
     
     
     //TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
-    if(active == -1){
+    if(ap_state == -1){
         //Le pilote automatique est désactivé à cause d'erreurs
         sprintf(apState, "GC_AP Time=%d AP_State='Deactivated'", time);
         IvySendMsg("%s", apState);
@@ -248,22 +248,51 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 }
 
 
-
 /* fonction associe a  */
 void stop(IvyClientPtr app, void *data, int argc, char **argv){
-	IvyStop ();
+	IvyStop();
+}
+
+int start(const char* bus, float sendCmd, struct variables varComputeBankAngleObj){
+    /* initialisation */
+	IvyInit ("Guid_COMM_APP", "Bonjour de Guid COMM", 0, 0, 0, 0);
+	IvyStart (bus);
+	
+
+	//on s'abonne à
+	IvyBindMsg (getPosition, 0, "^AircraftSetPosition X=(.*) Y=(.*) Altitude-ft=(.*) Roll=(.*) Pitch=(.*) Yaw=(.*) Heading=(.*) Airspeed=(.*) Groundspeed=(.*)");
+	//AircraftSetPosition X=-2.0366696227720553e-16 Y=0.8693304535637149 Altitude-ft=0.0 Roll=0.0 Pitch=0.0 Yaw=0.0 Heading=360.0 Airspeed=136.06911447084232 Groundspeed=136.06911447084232
+	
+	/* abonnement  */
+	IvyBindMsg (computeBankAngleObj, &varComputeBankAngleObj, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) DTWPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
+	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4 BANK_ANGLE_REF=5
+	
+	IvyBindMsg (getState, 0, "^StateVector x=(.*) y=(.*) z=(.*) Vp=(.*) fpa=(.*) psi=(.*) phi=(.*)");//StateVector x=1610.0 y=-3.7719121413738466e-13 z=0.0 Vp=70.0 fpa=0.0 psi=6.283185307179586 phi=0.0
+	
+	//on s'abonne 
+	IvyBindMsg (getMode, 0, "^FCULateral Mode=(.*) Val=(.*)");//FCULateral Mode=SelectedHeading Val=10"
+	
+	
+	//on s'abonne à l'holorge qui cadence nos envois
+	IvyBindMsg (sendGC, &sendCmd, "^Time t=(.*)");
+	
+	/* abonnement */
+	IvyBindMsg (stop, 0, "^Stop_guid_comm$");
+	
+	/* main loop */
+	IvyMainLoop();
 }
 
 int main (int argc, char**argv){
 
 	const char* bus = 0;
-    	int nb_sent = 0; //A voir avec la fonction sendGC
+    int nb_sent = 0; //A voir avec la fonction sendGC
     //Garde la dernière valeur reçue en cas de panne
 	struct variables varComputeBankAngleObj;
 	float sendCmd; 
 	
 	//Initialisation test et PA actif
-	active = 1;
+	ap_state = 1;
 	in_test = 0;
 	
 	/* handling of only -t option */
@@ -312,32 +341,15 @@ int main (int argc, char**argv){
 		bus = NULL;
 	}
 
-	/* initialisation */
-	IvyInit ("Guid_COMM_APP", "Bonjour de Guid COMM", 0, 0, 0, 0);
-	IvyStart (bus);
-	
-
-	//on s'abonne à
-	IvyBindMsg (getPosition, 0, "^AircraftSetPosition X=(.*) Y=(.*) Altitude-ft=(.*) Roll=(.*) Pitch=(.*) Yaw=(.*) Heading=(.*) Airspeed=(.*) Groundspeed=(.*)");
-	//AircraftSetPosition X=-2.0366696227720553e-16 Y=0.8693304535637149 Altitude-ft=0.0 Roll=0.0 Pitch=0.0 Yaw=0.0 Heading=360.0 Airspeed=136.06911447084232 Groundspeed=136.06911447084232
-	
-	/* abonnement  */
-	IvyBindMsg (computeBankAngleObj, &varComputeBankAngleObj, "GS_Data Time=(.*) XTK=(.*) TAE=(.*) DTWPT=(.*) BANK_ANGLE_REF=(.*)"); //GS_Data Time="time" XTK=" " TAE=" " Dist_to_WPT=" " BANK_ANGLE_REF= " "
-	//GS_Data Time=1 XTK=2 TAE=3 Dist_to_WPT=4 BANK_ANGLE_REF=5
-	
-	IvyBindMsg (getState, 0, "^StateVector x=(.*) y=(.*) z=(.*) Vp=(.*) fpa=(.*) psi=(.*) phi=(.*)");//StateVector x=1610.0 y=-3.7719121413738466e-13 z=0.0 Vp=70.0 fpa=0.0 psi=6.283185307179586 phi=0.0
-	
-	//on s'abonne 
-	IvyBindMsg (getMode, 0, "^FCULateral Mode=(.*) Val=(.*)");//FCULateral Mode=SelectedHeading Val=10"
-	
-	
-	//on s'abonne à l'holorge qui cadence nos envois
-	IvyBindMsg (sendGC, &sendCmd, "^Time t=(.*)");
-	
-	/* abonnement */
-	IvyBindMsg (stop, 0, "^Stop$");
-	
-	/* main loop */
-	IvyMainLoop();
+    /////////////////////////////////////////////////////////////////////////////////
+    //Boucle principale, permet un redemarrage de l'application suite à un plantage.
+    /////////////////////////////////////////////////////////////////////////////////
+	while(1){
+	    //appel de la fonction principale
+	    start(bus, sendCmd, varComputeBankAngleObj);
+	    if (in_test == 1){
+	        printf("REDEMARAGE FONCTION\n");
+	    }
+	}
 	return 0;
 }
