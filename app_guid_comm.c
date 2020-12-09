@@ -1,10 +1,6 @@
 #include "app_guid_comm.h"
 
 
-int active = 1; //PA est en mode actif à protéger
-int in_test = 0; //variable globale du mode test
-
-
 //Récupère la ground speed et le cap du modèle avion
 /* fonction associe a l'arrivée de la vitesse sol */
 void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
@@ -73,13 +69,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	/////////
 
 	clock_t begin = clock();
-	/*TODO fonction de check donnee
-	rempli/met à jour la structure de données
-	float time = atof(argv[0]);
-	float xtk = atof(argv[1]);
-	float tae = atof(argv[2]);
-	float dist = atof(argv[3]);
-	float bank_angle_ref = atof(argv[4]);*/
+	acquisition(data, argv); //Récupère time, xtk, tae, dist et bank_angle_ref
 	
 	//on récupère les données des structures pour simplifier la lecture du code
 	float time = (*(variables*)data).time;
@@ -127,7 +117,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		/////////
 	}
 	else{
-		error("computeBankAngleObjNav/gs");
+		error("computeBankAngleObjNav", "gs", gs.modif);
 		bank_angle_obj_nav = 0; //à vérifier auprès de Guy
 	}
 	pthread_mutex_unlock(&lock_gs);
@@ -197,18 +187,19 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 
 //Envoie les commande à l'avion
 /* fonction associe a l'horloge */
-void send(IvyClientPtr app, void *data, int argc, char **argv){
+void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
     /* Test */
     if (in_test == 1){
-	    printf("Entree dans sendRollCmd\n");
+	    printf("Entree dans sendGC\n");
 	}
     /////////
-
+    
     char tm[50], rollCommande[100], nxCommande[100], nzCommande[100], apState[100];
     int time = atof(argv[0]) * 1000;
     
+    
     //TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
-    if(active=-1){
+    if(active == -1){
         //Le pilote automatique est désactivé à cause d'erreurs
         sprintf(apState, "GC_AP Time=%d AP_State='Deactivated'", time);
         IvySendMsg("%s", apState);
@@ -266,11 +257,14 @@ void stop(IvyClientPtr app, void *data, int argc, char **argv){
 int main (int argc, char**argv){
 
 	const char* bus = 0;
-    	int nb_sent = 0; //A voir avec la fonction send
+    	int nb_sent = 0; //A voir avec la fonction sendGC
     //Garde la dernière valeur reçue en cas de panne
 	struct variables varComputeBankAngleObj;
 	float sendCmd; 
 	
+	//Initialisation test et PA actif
+	active = 1;
+	in_test = 0;
 	
 	/* handling of only -t option */
 	if( argc == 2){
@@ -338,7 +332,7 @@ int main (int argc, char**argv){
 	
 	
 	//on s'abonne à l'holorge qui cadence nos envois
-	IvyBindMsg (send, &sendCmd, "^Time t=(.*)");
+	IvyBindMsg (sendGC, &sendCmd, "^Time t=(.*)");
 	
 	/* abonnement */
 	IvyBindMsg (stop, 0, "^Stop$");

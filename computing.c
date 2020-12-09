@@ -22,7 +22,7 @@ void computeCmd(float bank_angle_obj, int in_test){
 		/////////
 	}
 	else{
-		error("computeCmd/bank_angle_aircraft");
+		error("computeCmd", "bank_angle_aircraft", bank_angle_aircraft.modif);
 	}
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	

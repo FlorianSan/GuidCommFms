@@ -62,6 +62,9 @@ struct varGlobFloat fpa;
 struct varGlobLint heading_aircraft;
 struct varGlobLint heading_objective;
 
+int active; //PA à protéger
+int in_test; //variable globale du mode test
+
 void getPosition(IvyClientPtr app, void *data, int argc, char **argv);
 void getState(IvyClientPtr app, void *data, int argc, char **argv);
 void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv);
