@@ -87,18 +87,26 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		fprintf(stderr,"Probleme de chronologie des données\n");
 	}*/
 	
-	float bank_angle_obj_nav, bank_angle_obj_hdg; //un seul suffit non ? (Lucas)
+	float bank_angle_obj; 
 	
 	pthread_mutex_lock(&lock_gs); // protection de la variable globale ground speed
+	
+	
+	
 	//dans le mode managé
 	if (gs.modif){
-		if(ap_state){
-			bank_angle_obj_nav = computeBankAngleObjNav(bank_angle_ref, xtk, tae); //Calcul de la commande 
+	
+	    pthread_mutex_lock(&lock_ap_state);
+	    int local_ap_state = ap_state; //comme il n'y à pas de modif de ap_state
+	    pthread_mutex_unlock(&lock_ap_state);
+	
+		if(local_ap_state){
+			bank_angle_obj = computeBankAngleObjNav(bank_angle_ref, xtk, tae); //Calcul de la commande 
 		}
-		else if (ap_state == 0){
+		else if (local_ap_state == 0){
 			pthread_mutex_lock(&lock_heading_aircraft);
 			pthread_mutex_lock(&lock_heading_objective);
-			bank_angle_obj_hdg = computeBankAngleObjHdg(heading_aircraft.value, heading_objective.value);
+			bank_angle_obj = computeBankAngleObjHdg(heading_aircraft.value, heading_objective.value);
 			heading_aircraft.modif = 0;//on a utilisé la donnée
 			heading_objective.modif = 0;//on a utilisé la donnée
 			pthread_mutex_unlock(&lock_heading_aircraft);
@@ -107,32 +115,25 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		gs.modif = 0;
 		/* Test */
 		if (in_test == 1){
-			if(ap_state){
-				printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj_nav);
+			if(local_ap_state){
+				printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj);
 			}
-			else if (ap_state == 0){
-				printf("computeBankAngleObjHdg : calcul bank_angle_obj_hdg = %f\n", bank_angle_obj_hdg);
+			else if (local_ap_state == 0){
+				printf("computeBankAngleObjHdg : calcul bank_angle_obj_hdg = %f\n", bank_angle_obj);
 			}
 		}
 		/////////
 	}
 	else{
 		error("computeBankAngleObjNav", "gs", gs.modif);
-		bank_angle_obj_nav = 0; //à vérifier auprès de Guy
+		bank_angle_obj = 0; //à vérifier auprès de Guy
 	}
 	pthread_mutex_unlock(&lock_gs);
 	
-	//TODO LE MODE HDG
-	// avec computeBankAngleObjHdg
+		
 	
-	//Appelle la fonction computeCmd avec le paramètre suivant le mode enclenché
-    //Pas utile ?? (Lucas)
-	if(ap_state){
-	    computeCmd(bank_angle_obj_nav, in_test);
-	}
-	else if (ap_state == 0){
-	    computeCmd(bank_angle_obj_hdg, in_test);
-	}
+	computeCmd(bank_angle_obj, in_test);
+	
 	
 	/* Test */
 	if (in_test == 1){
@@ -153,7 +154,9 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 
 	char * endPtr;
 	char mode_managed[] = "Managed", mode_selected[] = "SelectedHeading";
-
+	
+    pthread_mutex_lock(&lock_ap_state);
+	
 	if(strcmp(argv[0],mode_managed) == 0){
 	ap_state = 1;
 	/* Test */
@@ -178,6 +181,8 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 	else {
 	ap_state = 0;
+	
+	pthread_mutex_unlock(&lock_ap_state);
 	/* Test */
 	if (in_test == 1)
 		printf("getMode : AP inactif\n");
@@ -197,9 +202,12 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
     char tm[50], rollCommande[100], nxCommande[100], nzCommande[100], apState[100];
     int time = atof(argv[0]) * 1000;
     
-    
+    pthread_mutex_lock(&lock_ap_state);
+	int local_ap_state = ap_state; //comme il n'y à pas de modif de ap_state
+	pthread_mutex_unlock(&lock_ap_state);
+	
     //TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
-    if(ap_state == -1){
+    if(local_ap_state == -1){
         //Le pilote automatique est désactivé à cause d'erreurs
         sprintf(apState, "GC_AP Time=%d AP_State='Deactivated'", time);
         IvySendMsg("%s", apState);
@@ -292,7 +300,9 @@ int main (int argc, char**argv){
 	float sendCmd; 
 	
 	//Initialisation test et PA actif
+	pthread_mutex_lock(&lock_ap_state);
 	ap_state = 1;
+	pthread_mutex_unlock(&lock_ap_state);
 	in_test = 0;
 	
 	/* handling of only -t option */
