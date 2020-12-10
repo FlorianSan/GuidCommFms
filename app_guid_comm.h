@@ -25,7 +25,7 @@ pthread_mutex_t lock_heading_objective;
 pthread_mutex_t lock_fpa;
 pthread_mutex_t lock_ap_state;
 
-typedef struct variables variables;
+/*typedef struct variables variables;
 struct variables{ //structure pour faire passer les infos dans computeBankAngleObj
     float time;
     int cpt_time;
@@ -37,31 +37,34 @@ struct variables{ //structure pour faire passer les infos dans computeBankAngleO
     int cpt_dist;
     float bank_angle_ref;
     int cpt_bank_angle_ref;
-};
+};*/
 
-struct varGlobFloat
-{
+typedef struct{
 	float value;
 	int modif; //1 si l'info est produite 0 si l'info est consommé	
-};
+}varGlobFloat;
 
-struct varGlobLint
-{
+typedef struct{
 	long int value;
 	int modif; //1 si l'info est produite 0 si l'info est consommé	
-};
+}varGlobLint;
 
 //Variables globales protégées des accès concurents
-struct varGlobFloat roll_cmd; // commande de roulis
-struct varGlobFloat nx_cmd; // commande en facteur de charge longitudinal
-struct varGlobFloat nz_cmd; // commande en facteur de charge vertical
-struct varGlobFloat global_bank_angle_obj;
-struct varGlobFloat gs; //ground speed
-struct varGlobFloat bank_angle_aircraft;
-struct varGlobFloat fpa;
+varGlobFloat roll_cmd; // commande de roulis
+varGlobFloat nx_cmd; // commande en facteur de charge longitudinal
+varGlobFloat nz_cmd; // commande en facteur de charge vertical
+//varGlobFloat global_bank_angle_obj; // n'est pas encore utilisé
+varGlobFloat gs; //ground speed
+varGlobFloat bank_angle_aircraft;
+varGlobFloat fpa;
+varGlobFloat current_time;
+varGlobFloat xtk;
+varGlobFloat tae;
+varGlobFloat dist;
+varGlobFloat bank_angle_ref;
 
-struct varGlobLint heading_aircraft;
-struct varGlobLint heading_objective;
+varGlobLint heading_aircraft;
+varGlobLint heading_objective;
 
 int ap_state; //PA à protéger
 int in_test; //variable globale du mode test
@@ -72,7 +75,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv);
 void getMode(IvyClientPtr app, void *data, int argc, char **argv);
 void send(IvyClientPtr app, void *data, int argc, char **argv);
 void stop(IvyClientPtr app, void *data, int argc, char **argv);
-int start(const char* bus, float sendCmd, struct variables varComputeBankAngleObj);
+int start(const char* bus, float sendCmd);
 int main (int argc, char**argv);
 
 #endif

@@ -16,11 +16,11 @@
 
 
 //Crée une commande de vitesse de roulis à partir du bank angle souhaité et du bank angle mesuré
-void computeCmd(float bank_angle_obj, int in_test);
+void computeCmd(float bank_angle_obj);
 
-extern float computeBankAngleObjNav(float bank_angle_ref, float xtk, float tae);
+extern float computeBankAngleObjNav();
 
-extern float computeBankAngleObjHdg(long int heading_aircraft, long int heading_objective);
+extern float computeBankAngleObjHdg();
 
 
 #endif
