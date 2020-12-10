@@ -182,12 +182,12 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	else {
 	ap_state = 0;
 	
-	pthread_mutex_unlock(&lock_ap_state);
 	/* Test */
 	if (in_test == 1)
 		printf("getMode : AP inactif\n");
 	/////////
 	}
+	pthread_mutex_unlock(&lock_ap_state);
 }
 
 //Envoie les commande à l'avion
@@ -205,6 +205,10 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
     pthread_mutex_lock(&lock_ap_state);
 	int local_ap_state = ap_state; //comme il n'y à pas de modif de ap_state
 	pthread_mutex_unlock(&lock_ap_state);
+	
+	if (in_test == 1){
+	    printf("%d \n", local_ap_state);
+	}
 	
     //TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
     if(local_ap_state == -1){
