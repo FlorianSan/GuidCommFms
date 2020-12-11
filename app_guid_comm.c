@@ -95,7 +95,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	/* Test */
 	clock_t begin;
 	if (in_test == 1){
-		printf("Entree dans computeBankAngleObjNav\n");
+		printf("Entree dans computeBankAngleObj\n");
 		begin = clock();
 	}
 	/////////
@@ -115,12 +115,12 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		dist.value = atof(argv[3]);	    //dist de seq en Nm
 		dist.modif = 1;
 	}
-	else{error("computeBankAngleAircraft", "dist");}
+	else{error("computeBankAngleObj", "dist");}
 	if (testFormat(argv[4], "float")){
 		bank_angle_ref.value = atof(argv[4]);//dist de traj en ?
 		bank_angle_ref.modif = 1;
 	}
-	else{error("computeBankAngleRef", "bank_angle_ref");}	
+	else{error("computeBankAngleObj", "bank_angle_ref");}	
 		
 	/* Test */
     	if (in_test == 1){
@@ -259,7 +259,7 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	char tm[50], rollCommande[100], nxCommande[100], nzCommande[100], apState[100], bankAngle[100];
 
 	/* Acquisition du temps */
-	if (testFormat(argv[0], "float")){
+	if (testFormat(argv[0], "int")){
 	    current_time.value = atof(argv[0])*1000;
 	    current_time.modif = 1;
 	}
@@ -371,6 +371,7 @@ int start(const char* bus, float sendCmd){
 
 int main (int argc, char**argv){
 
+	int nb_try = 0; //nombre de fois où on a démarré l'app (l'app ne redémarre plus si trop d'erreurs)
 	const char* bus = 0;
     	int nb_sent = 0; //A voir avec la fonction sendGC
     	//Garde la dernière valeur reçue en cas de panne
@@ -428,7 +429,8 @@ int main (int argc, char**argv){
     /////////////////////////////////////////////////////////////////////////////////
     //Boucle principale, permet un redemarrage de l'application suite à un plantage.
     /////////////////////////////////////////////////////////////////////////////////
-	while(1){
+	while(nb_try < 4){
+		nb_try++;
 		//PA actif à chaque démarragef
 		pthread_mutex_lock(&lock_ap_state);
 		ap_state = 1;
@@ -436,10 +438,10 @@ int main (int argc, char**argv){
 		//Remise à zéro des erreurs en cas de redémarrage à chaud
 		error_init();
 	    	//appel de la fonction principale
-    	start(bus, sendCmd);
-    	if (in_test == 1){
-        	printf("REDEMARAGE FONCTION\n");
-    	}
+    		start(bus, sendCmd);
+    		if (in_test == 1)
+        		printf("REDEMARAGE FONCTION\n");
 	}
+	printf("APP CRASHED");
 	return 0;
 }

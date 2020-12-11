@@ -54,7 +54,7 @@ typedef struct{
 varGlobFloat roll_cmd; // commande de roulis
 varGlobFloat nx_cmd; // commande en facteur de charge longitudinal
 varGlobFloat nz_cmd; // commande en facteur de charge vertical
-varGlobFloat global_bank_angle_obj; // n'est pas encore utilisé
+varGlobFloat global_bank_angle_obj;
 varGlobFloat gs; //ground speed
 varGlobFloat bank_angle_aircraft;
 varGlobFloat fpa;
