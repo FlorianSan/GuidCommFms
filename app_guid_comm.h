@@ -19,6 +19,7 @@ pthread_mutex_t lock_roll_cmd;
 pthread_mutex_t lock_nx_cmd;
 pthread_mutex_t lock_nz_cmd;
 pthread_mutex_t lock_bank_angle_aircraft;
+pthread_mutex_t lock_bank_angle_objective;
 pthread_mutex_t lock_gs;
 pthread_mutex_t lock_heading_aircraft;
 pthread_mutex_t lock_heading_objective;
@@ -53,16 +54,17 @@ typedef struct{
 varGlobFloat roll_cmd; // commande de roulis
 varGlobFloat nx_cmd; // commande en facteur de charge longitudinal
 varGlobFloat nz_cmd; // commande en facteur de charge vertical
-//varGlobFloat global_bank_angle_obj; // n'est pas encore utilisé
+varGlobFloat global_bank_angle_obj; // n'est pas encore utilisé
 varGlobFloat gs; //ground speed
 varGlobFloat bank_angle_aircraft;
 varGlobFloat fpa;
-varGlobFloat current_time;
+//varGlobFloat current_time;
 varGlobFloat xtk;
 varGlobFloat tae;
 varGlobFloat dist;
 varGlobFloat bank_angle_ref;
 
+varGlobLint current_time;
 varGlobLint heading_aircraft;
 varGlobLint heading_objective;
 

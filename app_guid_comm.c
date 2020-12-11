@@ -174,7 +174,11 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 	pthread_mutex_unlock(&lock_gs);
 	
-		
+	pthread_mutex_lock(&lock_bank_angle_objective);
+	global_bank_angle_obj.value = bank_angle_obj;
+	global_bank_angle_obj.modif = 1;
+	pthread_mutex_unlock(&lock_bank_angle_objective);
+	
 	computeCmd(bank_angle_obj);
 	
 	
@@ -252,7 +256,7 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	}
     	/////////
     
-	char tm[50], rollCommande[100], nxCommande[100], nzCommande[100], apState[100];
+	char tm[50], rollCommande[100], nxCommande[100], nzCommande[100], apState[100], bankAngle[100];
 
 	/* Acquisition du temps */
 	if (testFormat(argv[0], "float")){
@@ -265,57 +269,68 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	int local_ap_state = ap_state; //comme il n'y à pas de modif de ap_state
 	pthread_mutex_unlock(&lock_ap_state);
 	
-	if (in_test == 1){
-	    printf("AP state : %d \n", local_ap_state);
-	}
 	
 	//TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
-	if(local_ap_state == -1){
-	    	//Le pilote automatique est désactivé à cause d'erreurs
-    	sprintf(apState, "GC_AP Time=%f AP_State='Deactivated'", current_time.value);
-    	IvySendMsg("%s", apState);
-	}
-
-	else{
+	if(current_time.value%1000 == 0){
+	    if(local_ap_state == 0){
+        	sprintf(apState, "GC_AP Time=%ld AP_State='Selected'", current_time.value);
+	    }
+	    else if(local_ap_state == 1){
+	        sprintf(apState, "GC_AP Time=%ld AP_State='Managed'", current_time.value);
+	    }
+        IvySendMsg("%s", apState);
+        if (in_test == 1){
+	        printf("AP state : %d \n", local_ap_state);
+	    }
+    }
+    
+    /////////////////////////////////////////////////////////////////////////////////
+    //Envoi de bankAngleObj
+    /////////////////////////////////////////////////////////////////////////////////
+    pthread_mutex_lock(&lock_bank_angle_objective);
+	sprintf(bankAngle, "GC_BA Time=%ld Bank_Angle_Obj=%f", current_time.value, global_bank_angle_obj.value); 
+	global_bank_angle_obj.modif = 0; //on a utilisé la valeur
+	IvySendMsg ("%s", bankAngle);
+	pthread_mutex_unlock(&lock_bank_angle_objective);
+	
     /////////////////////////////////////////////////////////////////////////////////
     //Envoi de roll cmd
     /////////////////////////////////////////////////////////////////////////////////
-    	pthread_mutex_lock(&lock_roll_cmd); //récupère la valeur de commande à voir si on refait un try
-    	if(roll_cmd.modif){
-    		(*(float*)data) = roll_cmd.value;
-    		roll_cmd.modif = 0;
-    	}
-    	pthread_mutex_unlock(&lock_roll_cmd);
-    	// TODO Gérer les erreurs
-    
-    	sprintf(rollCommande, "APLatControl rollRate=%f", (*(float*)data)); //commande, ancienne ou pas
-    	IvySendMsg ("%s", rollCommande);
-    
-     	/* Test */
-    	if (in_test == 1)
-    		printf("rollRate= %f time = %f\n", (*(float*)data), current_time.value);
-    	/////////
-    
-    
-    	/////////////////////////////////////////////////////////////////////////////////
-    	//Envoi de nx cmd
-    	/////////////////////////////////////////////////////////////////////////////////
-    	pthread_mutex_lock(&lock_nx_cmd); // protection de la variable globale nx_cmd
-    	sprintf(nxCommande, "APNxControl nx=%f", nx_cmd.value); //commande, ancienne ou pas
-    	IvySendMsg ("%s", nxCommande);
-    	nx_cmd.modif = 0;
-    	pthread_mutex_unlock(&lock_nx_cmd);
-    
-    
-    	/////////////////////////////////////////////////////////////////////////////////
-    	//Envoi de ny cmd
-    	/////////////////////////////////////////////////////////////////////////////////
-    	pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
-    	sprintf(nzCommande, "APNzControl nz=%f", nz_cmd.value); //commande, ancienne ou pas
-    	IvySendMsg ("%s", nzCommande);
-    	nz_cmd.modif = 0;
-    	pthread_mutex_unlock(&lock_nz_cmd);
+	pthread_mutex_lock(&lock_roll_cmd); //récupère la valeur de commande à voir si on refait un try
+	if(roll_cmd.modif){
+		(*(float*)data) = roll_cmd.value;
+		roll_cmd.modif = 0;
 	}
+	pthread_mutex_unlock(&lock_roll_cmd);
+	// TODO Gérer les erreurs
+
+	sprintf(rollCommande, "APLatControl rollRate=%f", (*(float*)data)); //commande, ancienne ou pas
+	IvySendMsg ("%s", rollCommande);
+
+ 	/* Test */
+	if (in_test == 1)
+		printf("rollRate= %f time = %ld\n", (*(float*)data), current_time.value);
+	/////////
+
+
+	/////////////////////////////////////////////////////////////////////////////////
+	//Envoi de nx cmd
+	/////////////////////////////////////////////////////////////////////////////////
+	pthread_mutex_lock(&lock_nx_cmd); // protection de la variable globale nx_cmd
+	sprintf(nxCommande, "APNxControl nx=%f", nx_cmd.value); //commande, ancienne ou pas
+	IvySendMsg ("%s", nxCommande);
+	nx_cmd.modif = 0;
+	pthread_mutex_unlock(&lock_nx_cmd);
+
+
+	/////////////////////////////////////////////////////////////////////////////////
+	//Envoi de ny cmd
+	/////////////////////////////////////////////////////////////////////////////////
+	pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
+	sprintf(nzCommande, "APNzControl nz=%f", nz_cmd.value); //commande, ancienne ou pas
+	IvySendMsg ("%s", nzCommande);
+	nz_cmd.modif = 0;
+	pthread_mutex_unlock(&lock_nz_cmd);
 }
 
 
