@@ -77,7 +77,14 @@ int testFormat(char* c, char* type){
 	int length = strlen(c);
 	int cpt_point = 0; //il ne faut qu'un seul point dans un float
 	char temp[1]; //tampon pour le caractère en cours d'analyse (nécessaire pour le .)
-	for (int j=0; j<length; j++){
+	//test premier élément est un moins, le premier élément ne pouvant pas être un point.
+	strncpy(temp,&c[0],1);
+    if (! isdigit(c[0])){
+		if (strcmp("-", temp) != 0){
+		    return 0;
+		}
+    }
+	for (int j=1; j<length; j++){
 		strncpy(temp,&c[j],1);
 		if (! isdigit(c[j])){
 			if (strcmp(".", temp) == 0)
