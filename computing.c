@@ -24,7 +24,7 @@ void computeCmd(float bank_angle_obj){
 	
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
-	float calcul = K3 * (bank_angle_obj - local_bank_angle_aircraft);
+	float calcul = sat(K3 * (bank_angle_obj - local_bank_angle_aircraft), 0.052359); //saturation à 3°/s donc 0.052359 rad/s
 	
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
 	roll_cmd.value = calcul;
@@ -76,7 +76,7 @@ float computeBankAngleObjNav(){
 	float K1=0.6295; //Gain relatif à la XTK \frac{V_{p}}{g n_{z} \tau_{phi} \tau_{xtk}}
 	float K2=0.0105; //Gain relatif à la TAE \frac{V_{p}}{g n_{z} \tau_{phi}}
 	
-	bank_angle_obj_nav = min(bank_angle_ref.value + K1 * xtk.value/gs.value + K2 * tae.value, sgn(bank_angle_ref.value)*25); //Calcul de la commande1
+	bank_angle_obj_nav = sat(bank_angle_ref.value + K1 * xtk.value/gs.value + K2 * tae.value, 25); //Calcul de la commande1
 	
 	return bank_angle_obj_nav;
 }
@@ -85,7 +85,7 @@ float computeBankAngleObjHdg(){
 	float bank_angle_obj_hdg;
 	float K4= 0.1;
 	
-	bank_angle_obj_hdg = K4 * (heading_objective.value - heading_aircraft.value);
+	bank_angle_obj_hdg = sat(K4 * (heading_objective.value - heading_aircraft.value), 25);
 	
 	return bank_angle_obj_hdg;
 }

@@ -11,8 +11,8 @@
 #define K3 1/3 //Gain relatif à la dynamique de phi
 
 //MACRO
-#define min(a,b) (a<=b?a:b) 
-#define sgn(x) ((x>0)-(x<0))
+#define sat(x,sat_val) ( ((x) > sat_val) ? sat_val : ( (-(x) > sat_val) ? (-sat_val) : (x) ) ) //macro de stauration symetrique
+
 
 
 //Crée une commande de vitesse de roulis à partir du bank angle souhaité et du bank angle mesuré

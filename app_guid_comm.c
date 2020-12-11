@@ -94,22 +94,22 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	
 	//Acquisition des données de GUID-SEQ
 	if (testFormat(argv[1], "float")){
-		xtk.value = atof(argv[1]);
+		xtk.value = atof(argv[1]) * 1852; 	    //xtk de seq en Nm donc conversion en metre
 		xtk.modif = 1;
 	}
 	else error("computeBankAngleObj", "xtk");
 	if (testFormat(argv[2], "float")){
-		tae.value = atof(argv[2]);
+		tae.value = atof(argv[2]); 	    //tae de seq en rad
 		tae.modif = 1;
 	}
 	else error("computeBankAngleObj", "tae");
 	if (testFormat(argv[3], "float")){
-		dist.value = atof(argv[3]);
+		dist.value = atof(argv[3]);	    //dist de seq en Nm
 		dist.modif = 1;
 	}
 	else error("computeBankAngleAircraft", "dist");
 	if (testFormat(argv[4], "float")){
-		bank_angle_ref.value = atof(argv[4]);
+		bank_angle_ref.value = atof(argv[4]);//dist de traj en ?
 		bank_angle_ref.modif = 1;
 	}
 	else error("computeBankAngleRef", "bank_angle_ref");
