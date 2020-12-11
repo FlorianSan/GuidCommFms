@@ -175,7 +175,6 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_unlock(&lock_gs);
 	
 		
-	
 	computeCmd(bank_angle_obj);
 	
 	
