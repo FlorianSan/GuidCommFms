@@ -81,7 +81,7 @@ float computeBankAngleObjNav(){
 	float K1=0.6295; //Gain relatif à la XTK \frac{V_{p}}{g n_{z} \tau_{phi} \tau_{xtk}}
 	float K2=0.0105; //Gain relatif à la TAE \frac{V_{p}}{g n_{z} \tau_{phi}}
 	
-	return sat(bank_angle_ref.value + K1 * xtk.value/gs.value + K2 * tae.value, 25); //Calcul de la commande1
+	return sat(bank_angle_ref.value + K1 * xtk.value/gs.value + K2 * tae.value, 30.0); //Calcul de la commande1
 
 }
 
@@ -89,6 +89,6 @@ float computeBankAngleObjHdg(){
 
 	float K4= 0.1;
 	
-	return sat(K4 * (heading_objective.value - heading_aircraft.value), 25);
+	return sat(K4 * (heading_objective.value - heading_aircraft.value), 30.0);
 
 }
