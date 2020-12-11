@@ -112,14 +112,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		bank_angle_ref.value = atof(argv[4]);//dist de traj en ?
 		bank_angle_ref.modif = 1;
 	}
-	else error("computeBankAngleRef", "bank_angle_ref");
-	
-	//on récupère les données des structures pour simplifier la lecture du code
-	/*float xtk = (*(variables*)data).xtk;
-	float tae = (*(variables*)data).tae;
-	float dist = (*(variables*)data).dist;
-	float bank_angle_ref = (*(variables*)data).bank_angle_ref;*/
-	
+	else error("computeBankAngleRef", "bank_angle_ref");	
 		
 	/* Test */
     	if (in_test == 1)
@@ -355,10 +348,7 @@ int main (int argc, char**argv){
     	//Garde la dernière valeur reçue en cas de panne
 	float sendCmd; 
 	
-	//Initialisation test et PA actif
-	pthread_mutex_lock(&lock_ap_state);
-	ap_state = 1;
-	pthread_mutex_unlock(&lock_ap_state);
+	//Initialisation test
 	in_test = 0;
 	
 	/* handling of only -t option */
@@ -411,11 +401,17 @@ int main (int argc, char**argv){
     //Boucle principale, permet un redemarrage de l'application suite à un plantage.
     /////////////////////////////////////////////////////////////////////////////////
 	while(1){
-	    //appel de la fonction principale
-	    start(bus, sendCmd);
-	    if (in_test == 1){
-	        printf("REDEMARAGE FONCTION\n");
-	    }
+		//PA actif à chaque démarragef
+		pthread_mutex_lock(&lock_ap_state);
+		ap_state = 1;
+		pthread_mutex_unlock(&lock_ap_state);
+		//Remise à zéro des erreurs en cas de redémarrage à chaud
+		error_init();
+	    	//appel de la fonction principale
+	    	start(bus, sendCmd);
+	    	if (in_test == 1){
+	        	printf("REDEMARAGE FONCTION\n");
+	    	}
 	}
 	return 0;
 }

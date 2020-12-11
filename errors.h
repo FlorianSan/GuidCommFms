@@ -13,4 +13,6 @@ void error(char* function, char* param);
 
 int testFormat(char* c, char* type);
 
+void error_init();
+
 #endif
