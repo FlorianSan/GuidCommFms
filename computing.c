@@ -17,8 +17,9 @@ void computeCmd(float bank_angle_obj){
 		local_bank_angle_aircraft = bank_angle_aircraft.value;
 		bank_angle_aircraft.modif = 0;
 		/* Test */
-		if (in_test == 1)
+		if (in_test == 1){
 			printf("computeCmd : mise a jour local_bank_angle_aircraft = %f\n", local_bank_angle_aircraft);
+		}
 		/////////
 	}
 	
@@ -72,20 +73,18 @@ void computeCmd(float bank_angle_obj){
 }
 
 float computeBankAngleObjNav(){
-	float bank_angle_obj_nav;
+
 	float K1=0.6295; //Gain relatif à la XTK \frac{V_{p}}{g n_{z} \tau_{phi} \tau_{xtk}}
 	float K2=0.0105; //Gain relatif à la TAE \frac{V_{p}}{g n_{z} \tau_{phi}}
 	
-	bank_angle_obj_nav = sat(bank_angle_ref.value + K1 * xtk.value/gs.value + K2 * tae.value, 25); //Calcul de la commande1
-	
-	return bank_angle_obj_nav;
+	return sat(bank_angle_ref.value + K1 * xtk.value/gs.value + K2 * tae.value, 25); //Calcul de la commande1
+
 }
 
 float computeBankAngleObjHdg(){
-	float bank_angle_obj_hdg;
+
 	float K4= 0.1;
 	
-	bank_angle_obj_hdg = sat(K4 * (heading_objective.value - heading_aircraft.value), 25);
-	
-	return bank_angle_obj_hdg;
+	return sat(K4 * (heading_objective.value - heading_aircraft.value), 25);
+
 }
