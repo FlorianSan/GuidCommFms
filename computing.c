@@ -4,7 +4,7 @@
 void computeCmd(float bank_angle_obj){
 	/* Test */
 	if (in_test == 1){
-		printf("Entree dans computeCmd\n");
+		printf("Entree dans computeCmd \n");
 	}
 	/////////
 	/////////////////////////////////////////////////////////////////////////////////
@@ -24,8 +24,12 @@ void computeCmd(float bank_angle_obj){
 	}
 	
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	
 	float calcul = sat(K3 * (bank_angle_obj - local_bank_angle_aircraft), 0.052359); //saturation à 3°/s donc 0.052359 rad/s
+	/* Test */
+	if (in_test == 1){
+		printf("computeCmd : roll commande calculé = %f\n", local_bank_angle_aircraft);
+	}
+	/////////
 	
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
 	roll_cmd.value = calcul;
