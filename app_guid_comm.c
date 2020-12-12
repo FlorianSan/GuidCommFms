@@ -425,6 +425,10 @@ int main (int argc, char**argv){
 	else{
 		bus = NULL;
 	}
+	
+	int status1 = system("cd horizonArtificiel/ && python3 horizon_artificiel.py &");
+	int status2 = system("python3 horizonArtificiel/affichage_commande.py &");
+	
 
     /////////////////////////////////////////////////////////////////////////////////
     //Boucle principale, permet un redemarrage de l'application suite à un plantage.
