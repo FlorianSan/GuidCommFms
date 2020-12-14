@@ -115,6 +115,7 @@ void error(char* function, char* param){
 	int cpt; //Nombre d'erreurs simultanées
 	cpt = (roll_cmd.modif < 0) + (nx_cmd.modif < 0) + (nz_cmd.modif < 0) + (global_bank_angle_obj.modif < 0) + (gs.modif < 0) + (bank_angle_aircraft.modif < 0) + (fpa.modif < 0) + (xtk.modif < 0) + (tae.modif < 0) + (dist.modif < 0) + (current_time.modif < 0) + (bank_angle_ref.modif < 0) + (heading_aircraft.modif < 0) + (heading_objective.modif < 0);
 	if (cpt > 1) //Au delà de deux erreurs simultanées, on désactive le PA
+	    IvySendMsg("GC_AP Time= AP_State='Deactivated'");
 		IvyStop();
 }
 
