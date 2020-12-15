@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     plt.ion()
 
-    figure, a = plt.subplots(figsize=(8,8))
+    figure, a = plt.subplots(figsize=(5,5))
     
     
    

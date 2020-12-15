@@ -97,7 +97,7 @@ if __name__ == '__main__':
     
     plt.ion()
 
-    figure, a = plt.subplots(figsize=(8,8))
+    figure, a = plt.subplots(figsize=(3,2))
     figure.canvas.mpl_connect('close_event', on_close)
     a.set_xlabel("Facteur de charge nz",fontsize=12, labelpad=210)
     a.set_ylabel("Vitesse de roulis (°/s)",fontsize=12, labelpad=210)

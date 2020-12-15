@@ -27,7 +27,7 @@ void computeCmd(float bank_angle_obj){
 	
 	///////////////
 	//calcul de K1 -> k_{1} = \frac{1}{\tau_{\phi}}
-	float K1 = 1/tau_phi;
+	float K1 = 1.0/tau_phi;
 	
 	float calcul = sat(K1 * (bank_angle_obj - local_bank_angle_aircraft), 0.052359); //saturation à 3°/s donc 0.052359 rad/s
 	/* Test */
@@ -81,14 +81,12 @@ void computeCmd(float bank_angle_obj){
 	pthread_mutex_unlock(&lock_nz_cmd);
 }
 
-float computeBankAngleObjNav(){
+float computeBankAngleObjNav(float ground_speed){
 
 	pthread_mutex_lock(&lock_vp);
 	pthread_mutex_lock(&lock_nz_cmd); 
-	pthread_mutex_lock(&lock_gs);
 		float K2= - vp.value / (g_gravite * nz_cmd.value * tau_psi);                        //k_{2} = -\frac{V_{p}}{g n_{z}\tau_{\psi}}
-		float K3= - vp.value / (g_gravite * nz_cmd.value * gs.value * tau_xtk * tau_psi);   //k_{3} = -\frac{V_{p}}{g n_{z} G_{s} \tau_{XTK} \tau_{\psi}}
-	pthread_mutex_unlock(&lock_gs);
+		float K3= - vp.value / (g_gravite * nz_cmd.value * ground_speed * tau_xtk * tau_psi);   //k_{3} = -\frac{V_{p}}{g n_{z} G_{s} \tau_{XTK} \tau_{\psi}}
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
 	

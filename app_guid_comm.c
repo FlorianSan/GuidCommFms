@@ -50,8 +50,7 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	if (in_test == 1){
 		printf("Entree dans getState\n");
 	}
-	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	
+		
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//récupération de Vp
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +69,6 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	/////////
 	pthread_mutex_unlock(&lock_vp);
 	
-	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
 	//récupération du fpa
@@ -106,7 +104,7 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 		printf("getState : recepetion bank_angle_aircraft = %f\n", bank_angle_aircraft.value);
 	}
 	/////////
-	
+	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
 
 //Calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
@@ -166,7 +164,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	    pthread_mutex_unlock(&lock_ap_state);
 	
 		if(local_ap_state){
-			bank_angle_obj = computeBankAngleObjNav(); //Calcul de la commande 
+			bank_angle_obj = computeBankAngleObjNav(gs.value); //Calcul de la commande 
 		}
 		else if (local_ap_state == 0){
 			pthread_mutex_lock(&lock_heading_aircraft);
