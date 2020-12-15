@@ -50,24 +50,26 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	if (in_test == 1){
 		printf("Entree dans getState\n");
 	}
-	/////////
-	/////////////////////////////////////////////////////////////////////////////////////////
-	//récupération de  phi
-	/////////////////////////////////////////////////////////////////////////////////////////
-	pthread_mutex_lock(&lock_bank_angle_aircraft);
+	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
-	/* Acquisition de bank_angle_aircraft */
-	if (testFormat(argv[6], "float")){
-		bank_angle_aircraft.value = atof(argv[6]); //correspond à phi donc le bank angle mesured
-		bank_angle_aircraft.modif = 1;
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//récupération de Vp
+	/////////////////////////////////////////////////////////////////////////////////////////
+	pthread_mutex_lock(&lock_vp);
+	
+	if (testFormat(argv[3], "float")){
+		vp.value = atof(argv[3]);
+		vp.modif = 1;
 	}
-	else {error("getState", "bank_angle_aircraft");}
+	else{error("getState", "vp");}
 	
 	/* Test */
 	if (in_test == 1){
-		printf("getState : recepetion bank_angle_aircraft = %f\n", bank_angle_aircraft.value);
+		printf("getState : recepetion Vp = %f\n", vp.value);
 	}
 	/////////
+	pthread_mutex_unlock(&lock_vp);
+	
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
 	/////////////////////////////////////////////////////////////////////////////////////////
@@ -87,6 +89,24 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	}
 	/////////
 	pthread_mutex_unlock(&lock_fpa);
+	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	//récupération du bank_angle_aircraft
+	/////////////////////////////////////////////////////////////////////////////////////////
+	pthread_mutex_lock(&lock_bank_angle_aircraft);
+
+	if (testFormat(argv[6], "float")){
+		bank_angle_aircraft.value = atof(argv[6]); //correspond à phi donc le bank angle mesured
+		bank_angle_aircraft.modif = 1;
+	}
+	else {error("getState", "bank_angle_aircraft");}
+	
+	/* Test */
+	if (in_test == 1){
+		printf("getState : recepetion bank_angle_aircraft = %f\n", bank_angle_aircraft.value);
+	}
+	/////////
+	
 }
 
 //Calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
@@ -341,8 +361,20 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 
 
 /* fonction associe a  */
-void stop(IvyClientPtr app, void *data, int argc, char **argv){
+void restart(IvyClientPtr app, void *data, int argc, char **argv){
 	IvyStop();
+}
+
+void stop(IvyClientPtr app, void *data, int argc, char **argv){
+	int status3 = system("pkill -f horizon_artificiel.py &");
+	int status4 = system("pkill -f affichage_commande.py &");
+	exit(EXIT_SUCCESS);
+}
+
+void intHandler(int dummy) {
+    int status3 = system("pkill -f horizon_artificiel.py &");
+	int status4 = system("pkill -f affichage_commande.py &");
+	exit(EXIT_SUCCESS);
 }
 
 int start(const char* bus, float sendCmd){
@@ -369,7 +401,12 @@ int start(const char* bus, float sendCmd){
 	IvyBindMsg (sendGC, &sendCmd, "^Time t=(.*)");
 	
 	/* abonnement */
+	IvyBindMsg (restart, 0, "^Restart_guid_comm$");
+	
+	/* abonnement */
 	IvyBindMsg (stop, 0, "^Stop_guid_comm$");
+	
+	signal(SIGINT, intHandler);
 	
 	/* main loop */
 	IvyMainLoop();

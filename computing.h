@@ -6,9 +6,11 @@
 #include <math.h>
 
 #define tau_phi 3
+#define tau_psi 10
 #define tau_xtk 3
 
-#define K3 0.333333 //Gain relatif à la dynamique de phi
+#define g_gravite 9.81
+
 
 //MACRO
 #define sat(x,sat_val) ( ((x) > sat_val) ? sat_val : ( (-(x) > sat_val) ? (-sat_val) : (x) ) ) //macro de stauration symetrique

@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
 
 #include "computing.h"
 #include "errors.h"
@@ -24,6 +25,7 @@ pthread_mutex_t lock_gs;
 pthread_mutex_t lock_heading_aircraft;
 pthread_mutex_t lock_heading_objective;
 pthread_mutex_t lock_fpa;
+pthread_mutex_t lock_vp;
 pthread_mutex_t lock_ap_state;
 
 /*typedef struct variables variables;
@@ -58,6 +60,7 @@ varGlobFloat global_bank_angle_obj;
 varGlobFloat gs; //ground speed
 varGlobFloat bank_angle_aircraft;
 varGlobFloat fpa;
+varGlobFloat vp;
 //varGlobFloat current_time;
 varGlobFloat xtk;
 varGlobFloat tae;

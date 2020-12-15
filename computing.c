@@ -24,7 +24,12 @@ void computeCmd(float bank_angle_obj){
 	}
 	
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	float calcul = sat(K3 * (bank_angle_obj - local_bank_angle_aircraft), 0.052359); //saturation à 3°/s donc 0.052359 rad/s
+	
+	///////////////
+	//calcul de K1 -> k_{1} = \frac{1}{\tau_{\phi}}
+	float K1 = 1/tau_phi;
+	
+	float calcul = sat(K1 * (bank_angle_obj - local_bank_angle_aircraft), 0.052359); //saturation à 3°/s donc 0.052359 rad/s
 	/* Test */
 	if (in_test == 1){
 		printf("computeCmd : roll commande calculé = %f\n", local_bank_angle_aircraft);
@@ -78,17 +83,26 @@ void computeCmd(float bank_angle_obj){
 
 float computeBankAngleObjNav(){
 
-	float K1=0.6295; //Gain relatif à la XTK \frac{V_{p}}{g n_{z} \tau_{phi} \tau_{xtk}}
-	float K2=0.0105; //Gain relatif à la TAE \frac{V_{p}}{g n_{z} \tau_{phi}}
+	pthread_mutex_lock(&lock_vp);
+	pthread_mutex_lock(&lock_nz_cmd); 
+	pthread_mutex_lock(&lock_gs);
+		float K2= - vp.value / (g_gravite * nz_cmd.value * tau_psi);                        //k_{2} = -\frac{V_{p}}{g n_{z}\tau_{\psi}}
+		float K3= - vp.value / (g_gravite * nz_cmd.value * gs.value * tau_xtk * tau_psi);   //k_{3} = -\frac{V_{p}}{g n_{z} G_{s} \tau_{XTK} \tau_{\psi}}
+	pthread_mutex_unlock(&lock_gs);
+	pthread_mutex_unlock(&lock_nz_cmd);
+	pthread_mutex_unlock(&lock_vp);
 	
-	return sat(bank_angle_ref.value + K1 * xtk.value/gs.value + K2 * tae.value, 30.0); //Calcul de la commande1
+	return sat(bank_angle_ref.value + K2 * tae.value + K3 * xtk.value , 30.0); //Calcul de la commande1
 
 }
 
 float computeBankAngleObjHdg(){
-
-	float K4= 0.1;
+    pthread_mutex_lock(&lock_vp);
+	pthread_mutex_lock(&lock_nz_cmd); 
+	    float K2= - vp.value / (g_gravite * nz_cmd.value * tau_psi);                        //k_{2} = -\frac{V_{p}}{g n_{z}\tau_{\psi}}
+	pthread_mutex_unlock(&lock_nz_cmd);
+	pthread_mutex_unlock(&lock_vp);
 	
-	return sat(K4 * (heading_objective.value - heading_aircraft.value), 30.0);
+	return sat(K2 * (heading_objective.value - heading_aircraft.value), 30.0);
 
 }
