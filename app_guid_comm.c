@@ -301,8 +301,8 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		(*(float*)data) = roll_cmd.value;
 		roll_cmd.modif = 0;
 	}
+	else {error("sendGC", "roll_cmd");}
 	pthread_mutex_unlock(&lock_roll_cmd);
-	// TODO Gérer les erreurs
 
 	sprintf(rollCommande, "APLatControl rollRate=%f", (*(float*)data)); //commande, ancienne ou pas
 	IvySendMsg ("%s", rollCommande);
@@ -317,9 +317,12 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	//Envoi de nx cmd
 	/////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_nx_cmd); // protection de la variable globale nx_cmd
-	sprintf(nxCommande, "APNxControl nx=%f", nx_cmd.value); //commande, ancienne ou pas
-	IvySendMsg ("%s", nxCommande);
-	nx_cmd.modif = 0;
+	if (nx_cmd.modif){
+		sprintf(nxCommande, "APNxControl nx=%f", nx_cmd.value); //commande, ancienne ou pas
+		IvySendMsg ("%s", nxCommande);
+		nx_cmd.modif = 0;
+	}
+	else {error("sendGC", "nx_cmd");}
 	pthread_mutex_unlock(&lock_nx_cmd);
 
 
@@ -327,9 +330,12 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	//Envoi de ny cmd
 	/////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
-	sprintf(nzCommande, "APNzControl nz=%f", nz_cmd.value); //commande, ancienne ou pas
-	IvySendMsg ("%s", nzCommande);
-	nz_cmd.modif = 0;
+	if (nz_cmd.modif){
+		sprintf(nzCommande, "APNzControl nz=%f", nz_cmd.value); //commande, ancienne ou pas
+		IvySendMsg ("%s", nzCommande);
+		nz_cmd.modif = 0;
+	}
+	else {error("sendGC", "roll_cmd");}
 	pthread_mutex_unlock(&lock_nz_cmd);
 }
 
@@ -446,6 +452,6 @@ int main (int argc, char**argv){
     		if (in_test == 1)
         		printf("REDEMARAGE FONCTION\n");
 	}
-	printf("APP CRASHED");
+	printf("APP CRASHED\n");
 	return 0;
 }
