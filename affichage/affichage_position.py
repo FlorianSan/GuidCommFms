@@ -9,10 +9,10 @@ import numpy as np
 import time
 
 
-IVYAPPNAME = 'Affichage commande'
+IVYAPPNAME = 'Affichage position'
 
-p =0
-nz =0 
+X = [0]
+Y = [0]
 
 def lprint(fmt, *arg):
     print(IVYAPPNAME + ': ' + fmt % arg)
@@ -37,17 +37,13 @@ def ondieproc(agent, _id):
     pass
 
     
-def changeRollCmd(agent, *larg):
-    global p
-    p = float(larg[0])*57.296
+def changePos(agent, *larg):
+    global X
+    global Y
+    X.append(float(larg[0]))
+    Y.append(float(larg[1]))
+    
    
-    
-def changeNz(agent, *larg):
-    global nz
-    nz = float(larg[0])
-    
-def on_close(event):
-    pass
         
     
 
@@ -88,38 +84,33 @@ if __name__ == '__main__':
     # is given ; this is performed by IvyStart (C)
     IvyStart(sivybus)
     
-    #StateVector x=0 y=0 z=0 Vp=0 fpa=10 psi=0 phi=10
-    IvyBindMsg(changeRollCmd, "^APLatControl rollRate=(.*)")
-    #IPLatControl rollRate=1
-    
-    IvyBindMsg(changeNz, "^IPNzControl nz=(.*)")
-    #IPNzControl nz=1
-    
+
+    IvyBindMsg(changePos, "^StateVector x=(.*) y=(.*) z=(.*) Vp=(.*) fpa=(.*) psi=(.*) phi=(.*)")
+
+
     plt.ion()
 
     figure, a = plt.subplots(figsize=(8,8))
-    figure.canvas.mpl_connect('close_event', on_close)
-    a.set_xlabel("Facteur de charge nz",fontsize=12, labelpad=210)
-    a.set_ylabel("Vitesse de roulis (°/s)",fontsize=12, labelpad=210)
     
-    a.spines['left'].set_position('center')
-    a.spines['bottom'].set_position('center')
-
-    # Eliminate upper and right axes
-    a.spines['right'].set_color('none')
-    a.spines['top'].set_color('none')
     
-    a.set_xlim([-3.5, 3.5])
-    a.set_ylim([-1.5, 1.5])
+   
+    
+    a.set_xlim([-10000, 10000])
+    a.set_ylim([-10000, 10000])
     
     a.grid(True,linestyle='-',color='0.75')
-    line1, = a.plot([p],[nz], markersize=5, color="red", marker="s")
+    line1, = a.plot([X],[Y], markersize=1, color="red", marker=".")
+    a.set_xlabel("Position X")
+    a.set_ylabel("Position Y")
+    figure.canvas.set_window_title('Affichage position avion')
     
     while(True):
-        line1.set_xdata(p)
-        line1.set_ydata(nz)
+        line1.set_xdata(X)
+        line1.set_ydata(Y)
         figure.canvas.draw()
         figure.canvas.flush_events()
+        #a.relim()
+        #a.autoscale_view()
         #if msvcrt.kbhit() and msvcrt.getch() == chr(27).encode():
         #    aborted = True
         #    break

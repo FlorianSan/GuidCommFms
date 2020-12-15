@@ -367,14 +367,20 @@ void restart(IvyClientPtr app, void *data, int argc, char **argv){
 
 //Fonction de stop avec Ivy
 void stop(IvyClientPtr app, void *data, int argc, char **argv){
-	int status3 = system("pkill -f horizon_artificiel.py &");
-	int status4 = system("pkill -f affichage_commande.py &");
+    //On tue les affichages
+	int status4 = system("pkill -f horizon_artificiel.py &");
+	int status5 = system("pkill -f affichage_commande.py &");
+	int status6 = system("pkill -f affichage_position.py &");
+	//On tue l'app
 	exit(EXIT_SUCCESS);
 }
 //Fonction de stop avec ctl+c
 void intHandler(int dummy) {
-    int status3 = system("pkill -f horizon_artificiel.py &");
-	int status4 = system("pkill -f affichage_commande.py &");
+    //On tue les affichages
+	int status4 = system("pkill -f horizon_artificiel.py &");
+	int status5 = system("pkill -f affichage_commande.py &");
+	int status6 = system("pkill -f affichage_position.py &");
+	//On tue l'app
 	exit(EXIT_SUCCESS);
 }
 
@@ -470,8 +476,12 @@ int main (int argc, char**argv){
 		bus = NULL;
 	}
 	
-	int status1 = system("cd horizonArtificiel/ && python3 horizon_artificiel.py &");
-	int status2 = system("python3 horizonArtificiel/affichage_commande.py &");
+	/////////////////////////////////////////////////////////////////////////////////
+    //Lancement IHM
+    /////////////////////////////////////////////////////////////////////////////////
+	int status1 = system("python3 affichage/horizon_artificiel.py &");
+	int status2 = system("python3 affichage/affichage_commande.py &");
+	int status3 = system("python3 affichage/affichage_position.py &");
 	
 
     /////////////////////////////////////////////////////////////////////////////////
