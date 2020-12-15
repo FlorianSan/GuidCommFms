@@ -365,12 +365,13 @@ void restart(IvyClientPtr app, void *data, int argc, char **argv){
 	IvyStop();
 }
 
+//Fonction de stop avec Ivy
 void stop(IvyClientPtr app, void *data, int argc, char **argv){
 	int status3 = system("pkill -f horizon_artificiel.py &");
 	int status4 = system("pkill -f affichage_commande.py &");
 	exit(EXIT_SUCCESS);
 }
-
+//Fonction de stop avec ctl+c
 void intHandler(int dummy) {
     int status3 = system("pkill -f horizon_artificiel.py &");
 	int status4 = system("pkill -f affichage_commande.py &");
@@ -406,7 +407,7 @@ int start(const char* bus, float sendCmd){
 	/* abonnement */
 	IvyBindMsg (stop, 0, "^Stop_guid_comm$");
 	
-	signal(SIGINT, intHandler);
+	signal(SIGINT, intHandler); //abonnement au raccourci ctrl+c
 	
 	/* main loop */
 	IvyMainLoop();
