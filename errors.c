@@ -183,18 +183,29 @@ int testFormat(char* c, char* type){
 	int length = strlen(c);
 	int point_cpt = 0; //il ne faut qu'un seul point dans un float
 	int minus_cpt = 0; //les caractères peuvent être négatifs
+	int scient_cpt = 0; //ecriture scientifique
+	int bool_scient = 0;
 	char temp[1]; //tampon pour le caractère en cours d'analyse (nécessaire pour le "." et le "-")
 	for (int j=0; j<length; j++){
 		strncpy(temp,&c[j],1);
 		if (! isdigit(c[j])){
-			if (strcmp(".", temp) == 0)
+			
+			if (strcmp(".", temp) == 0){
 				point_cpt++;
-			else if (strcmp("-", temp) == 0)
+			}
+			else if (strcmp("e", temp) == 0 || strcmp("+", temp) == 0 ){
+			    if(strcmp("e", temp) == 0){
+			        bool_scient = 1;
+			    }
+			    scient_cpt++;
+			}
+			else if (strcmp("-", temp) == 0){
 				minus_cpt++;
+			}
 			else return 0;
 		}					
 	}
-	if ((point_cpt > 0 && type == "int") || (point_cpt > 1 && type == "float") || (minus_cpt > 1))
+	if ((point_cpt > 0 && type == "int") || (point_cpt > 1 && type == "float") || (minus_cpt > 1) && (bool_scient == 0) || (point_cpt > 1 && scient_cpt > 2 && (minus_cpt > 2) && (bool_scient == 1) && type == "float"))
 		return 0;
 	return 1;
 }

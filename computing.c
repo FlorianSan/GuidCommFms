@@ -6,78 +6,87 @@ void computeCmd(float bank_angle_obj){
 	if (in_test == 1){
 		printf("Entree dans computeCmd \n");
 	}
-	/////////
+	
+	/////////////////////////////////////////////////////////////////////////////////
+	//Récupération du bank angle avion
+	/////////////////////////////////////////////////////////////////////////////////
+	float local_bank_angle_aircraft;
+	
+	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
+		if(bank_angle_aircraft.modif){
+			local_bank_angle_aircraft = bank_angle_aircraft.value;
+			bank_angle_aircraft.modif = 0;
+			/* Test */
+			if (in_test == 1){
+				printf("computeCmd : mise a jour local_bank_angle_aircraft = %f\n", local_bank_angle_aircraft);
+			}
+			/////////
+		}
+		else{error("computeCmd", "local_bank_angle_aircraft");}
+	pthread_mutex_unlock(&lock_bank_angle_aircraft);
+	
+	
+	/////////////////////////////////////////////////////////////////////////////////
+	//Recupération du fpa
+	/////////////////////////////////////////////////////////////////////////////////
+	float local_fpa;
+	pthread_mutex_lock(&lock_fpa);
+		if(fpa.modif){
+			local_fpa = fpa.value;
+			fpa.modif = 0;
+			if (in_test == 1){
+				printf("computeCmd : mise a jour local_fpa = %f\n", local_fpa);
+			}
+		}
+		else{error("computeCmd", "local_fpa");}
+	pthread_mutex_unlock(&lock_fpa);
+	
+
 	/////////////////////////////////////////////////////////////////////////////////
 	//Calcul de roll cmd
 	/////////////////////////////////////////////////////////////////////////////////
-	float local_bank_angle_aircraft;
-
-	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
-	if(bank_angle_aircraft.modif){
-		local_bank_angle_aircraft = bank_angle_aircraft.value;
-		bank_angle_aircraft.modif = 0;
-		/* Test */
-		if (in_test == 1){
-			printf("computeCmd : mise a jour local_bank_angle_aircraft = %f\n", local_bank_angle_aircraft);
-		}
-		/////////
-	}
-	
-	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
 	///////////////
 	//calcul de K1 -> k_{1} = \frac{1}{\tau_{\phi}}
 	float K1 = 1.0/tau_phi;
 	
 	float calcul = sat(K1 * (bank_angle_obj - local_bank_angle_aircraft), 0.052359); //saturation à 3°/s donc 0.052359 rad/s
-	/* Test */
-	if (in_test == 1){
-		printf("computeCmd : roll commande calculé = %f\n", local_bank_angle_aircraft);
-	}
-	/////////
-	
+
 	pthread_mutex_lock(&lock_roll_cmd); // protection de la variable globale roll_cmd
-	roll_cmd.value = calcul;
-	roll_cmd.modif = 1;
-	/* Test */
-	if (in_test == 1){
-		printf("computeCmd : calcul roll_cmd = %f\n", roll_cmd.value);
-	}
-	/////////
+		roll_cmd.value = calcul;
+		roll_cmd.modif = 1;
+		/* Test */
+		if (in_test == 1){
+			printf("computeCmd : calcul roll_cmd = %f, %d \n", roll_cmd.value, roll_cmd.modif);
+		}
+		
 	pthread_mutex_unlock(&lock_roll_cmd);
 	
-	//take fpa
-	pthread_mutex_lock(&lock_fpa);
-	float fpa_value = fpa.value;
-	fpa.modif = 0;
-	pthread_mutex_unlock(&lock_fpa);
+	
 	
 	/////////////////////////////////////////////////////////////////////////////////
 	//Calcul de nx cmd
 	/////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_nx_cmd); // protection de la variable globale nx_cmd
-	nx_cmd.value = sin(fpa_value); // nx = \frac{\dotV}{g} + \sin(\gamma) avec \frac{\dotV}{g} = 0 pour le palier 
-	nx_cmd.modif = 1;
-	/* Test */
-	if (in_test == 1){
-		printf("computeCmd : calcul nx_cmd = %f\n", nx_cmd.value);
-	}
-	/////////
+		nx_cmd.value = sin(local_fpa); // nx = \frac{\dotV}{g} + \sin(\gamma) avec \frac{\dotV}{g} = 0 pour le palier 
+		nx_cmd.modif = 1;
+		/* Test */
+		if (in_test == 1){
+			printf("computeCmd : calcul nx_cmd = %f, %d\n", nx_cmd.value, nx_cmd.modif);
+		}
+		
 	pthread_mutex_unlock(&lock_nx_cmd);
-	
+
 	/////////////////////////////////////////////////////////////////////////////////
 	//Calcul de ny cmd
 	/////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
-	pthread_mutex_lock(&lock_bank_angle_aircraft);
-	nz_cmd.value = cos(fpa_value)/cos(bank_angle_aircraft.value); //ny = \frac{1}{\cos(\phi)}(\frac{V\dot\gamma}{g} + \cos(\gamma)) avec \frac{V\dot\gamma}{g} = 0 pour le palier 
-	pthread_mutex_unlock(&lock_bank_angle_aircraft);
-	nz_cmd.modif = 1;
-	/* Test */
-	if (in_test == 1){
-		printf("computeCmd : calcul nz_cmd = %f\n", nz_cmd.value);
-	}
-	/////////
+		nz_cmd.value = cos(local_fpa)/cos(local_bank_angle_aircraft); //ny = \frac{1}{\cos(\phi)}(\frac{V\dot\gamma}{g} + \cos(\gamma)) avec ///		\frac{V\dot\gamma}{g} = 0 pour le palier 
+		nz_cmd.modif = 1;
+		/* Test */
+		if (in_test == 1){
+			printf("computeCmd : calcul nz_cmd = %f, %d\n", nz_cmd.value, nz_cmd.modif);
+		}
 	pthread_mutex_unlock(&lock_nz_cmd);
 }
 

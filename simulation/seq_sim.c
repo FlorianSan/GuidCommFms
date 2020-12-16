@@ -4,12 +4,14 @@
 #include <ivy.h>
 #include <ivyloop.h>
 #include <string.h>
+#include <unistd.h>
 
 
 
 void fonction(IvyClientPtr app, void *data, int argc, char **argv){
 	float time = atof(argv[0]);
-	IvySendMsg ("GS_Data Time=%f XTK=%f TAE=%f DTWPT=%f BANK_ANGLE_REF=%f", time, 1.0, 1.0, 1.0, 1.0);
+	usleep(10);
+	IvySendMsg ("GS_Data Time=%f XTK=%f TAE=%f DTWPT=%f BANK_ANGLE_REF=%f", time, 0.0, 0.0, 1.0, 0.1);
 }
 
 

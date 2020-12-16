@@ -74,7 +74,6 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	//récupération du fpa
 	/////////////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_fpa);
-	
 	if (testFormat(argv[4], "float")){
 		fpa.value = atof(argv[4]);
 		fpa.modif = 1;
@@ -353,7 +352,7 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		IvySendMsg ("%s", nzCommande);
 		nz_cmd.modif = 0;
 	}
-	else {error("sendGC", "roll_cmd");}
+	else {error("sendGC", "nz_cmd");}
 	pthread_mutex_unlock(&lock_nz_cmd);
 }
 
@@ -428,6 +427,22 @@ int main (int argc, char**argv){
 	//Initialisation test
 	in_test = 0;
 	
+	//Initialisation structure
+	pthread_mutex_lock(&lock_nz_cmd); 
+		nz_cmd.value = 1;
+		nz_cmd. modif = 1;
+	pthread_mutex_unlock(&lock_nz_cmd);
+	
+    pthread_mutex_lock(&lock_roll_cmd); 
+		roll_cmd.value = 0;
+		roll_cmd.modif = 1;
+	pthread_mutex_unlock(&lock_roll_cmd);
+	
+	pthread_mutex_lock(&lock_nx_cmd); 
+		nx_cmd.value = 0;
+		nx_cmd.modif = 1;
+	pthread_mutex_unlock(&lock_nx_cmd);
+	
 	/* handling of only -t option */
 	if( argc == 2){
 		if(strcmp(argv[1], "-t") == 0){
@@ -485,7 +500,8 @@ int main (int argc, char**argv){
     /////////////////////////////////////////////////////////////////////////////////
     //Boucle principale, permet un redemarrage de l'application suite à un plantage.
     /////////////////////////////////////////////////////////////////////////////////
-	while(nb_try < 4){
+	//while(nb_try < 4){
+	while(1){
 		nb_try++;
 		//PA actif à chaque démarragef
 		pthread_mutex_lock(&lock_ap_state);
