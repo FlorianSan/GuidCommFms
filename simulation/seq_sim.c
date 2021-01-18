@@ -10,8 +10,8 @@
 
 void fonction(IvyClientPtr app, void *data, int argc, char **argv){
 	float time = atof(argv[0]);
-	usleep(10);
-	IvySendMsg ("GS_Data Time=%f XTK=%f TAE=%f DTWPT=%f BANK_ANGLE_REF=%f", time, 0.0, 0.0, 1.0, 0.1);
+	usleep(10000);
+	IvySendMsg ("GS_Data Time=%f XTK=%f TAE=%f DTWPT=%f BANK_ANGLE_REF=%f ALDTWP=%f", time, 0.0, 0.0, 1.0, 0.1, 0.0); //"^GS_Data Time=(.*) XTK=(.*) TAE=(.*) DTWPT=(.*) BANK_ANGLE_REF=(.*) ALDTWP=(.*)"
 }
 
 

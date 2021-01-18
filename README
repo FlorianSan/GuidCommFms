@@ -85,3 +85,6 @@ ivyprobe -b 10.3.141.120:2010 ‘(.*)’
 Comme ça tu t’abonnes à tous les messages qui passent sur le bus, il faut que l’adresse soit la même que celle dans le fichier hellotranslater.c.
 
 Après si tu tapes un ‘Hello de florian’ par exemple sur l’ivyprobe, ‘de florian’ doit s’afficher dans la console de ton application. 
+
+Version de gcc 9.3.0
+

@@ -70,6 +70,10 @@ varGlobFloat bank_angle_ref;
 varGlobLint current_time;
 varGlobLint heading_aircraft;
 varGlobLint heading_objective;
+varGlobLint flight_starting;
+
+clock_t debut;
+clock_t fin;
 
 int ap_state; //PA à protéger
 int in_test; //variable globale du mode test
