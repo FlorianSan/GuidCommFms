@@ -107,6 +107,34 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 }
 
+
+void getForecast(IvyClientPtr app, void *data, int argc, char **argv){
+	if (in_test == 1){
+		printf("Entree dans getForecast\n");
+	}
+	
+	pthread_mutex_lock(&lock_TAS);
+	if (testFormat(argv[0], "float")){
+		tas.value = atof(argv[0]);
+		tas.modif = 1;
+	}
+	
+	else{error("computeBankAngleObj", "tae");}
+	pthread_mutex_unlock(&lock_TAS);
+	
+	pthread_mutex_lock(&lock_Alt);
+	if (testFormat(argv[1], "float")){
+		alt.value = atof(argv[1]);
+		alt.modif = 1;
+	}
+	else{error("computeBankAngleObj", "tae");}
+	pthread_mutex_unlock(&lock_Alt);
+	
+	if (in_test == 1){
+		printf("getForecast : recepetion TAS = %f, Altitude = %f\n", tas.value, alt.value);
+	}
+}
+
 //Calcule le bank angle souhaité (pour suivre ou revenir sur la trajectoire)
 /* fonction associe a l'arrivée d'information */
 void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
@@ -410,6 +438,8 @@ int start(const char* bus, float sendCmd){
 	//AircraftSetPosition X=-2.0366696227720553e-16 Y=0.8693304535637149 Altitude-ft=0.0 Roll=0.0 Pitch=0.0 Yaw=0.0 Heading=360.0 Airspeed=136.06911447084232 Groundspeed=136.06911447084232
 	
 	IvyBindMsg (getState, 0, "^StateVector x=(.*) y=(.*) z=(.*) Vp=(.*) fpa=(.*) psi=(.*) phi=(.*)");//StateVector x=1610.0 y=-3.7719121413738466e-13 z=0.0 Vp=70.0 fpa=0.0 psi=6.283185307179586 phi=0.0
+	
+	IvyBindMsg (getForecast, 0, "GT TAS=(.*) CRZ_ALT=(.*)");
 	
 	// abonnement  
 	IvyBindMsg (computeBankAngleObj, 0, "^GS_Data Time=(.*) XTK=(.*) TAE=(.*) DTWPT=(.*) BANK_ANGLE_REF=(.*) ALDTWP=(.*)"); 
