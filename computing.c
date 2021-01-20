@@ -68,7 +68,7 @@ void computeCmd(float bank_angle_obj){
 	//Calcul de nx cmd
 	/////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_nx_cmd); // protection de la variable globale nx_cmd
-		nx_cmd.value = sin(local_fpa); // nx = \frac{\dotV}{g} + \sin(\gamma) avec \frac{\dotV}{g} = 0 pour le palier 
+		nx_cmd.value = sat(sin(local_fpa), 1.5); // nx = \frac{\dotV}{g} + \sin(\gamma) avec \frac{\dotV}{g} = 0 pour le palier 
 		nx_cmd.modif = 1;
 		/* Test */
 		if (in_test == 1){
@@ -81,7 +81,7 @@ void computeCmd(float bank_angle_obj){
 	//Calcul de nz cmd
 	/////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
-		nz_cmd.value = cos(local_fpa)/cos(local_bank_angle_aircraft); //ny = \frac{1}{\cos(\phi)}(\frac{V\dot\gamma}{g} + \cos(\gamma)) avec ///		\frac{V\dot\gamma}{g} = 0 pour le palier 
+		nz_cmd.value = sat(cos(local_fpa)/cos(local_bank_angle_aircraft), 1.5); //ny = \frac{1}{\cos(\phi)}(\frac{V\dot\gamma}{g} + \cos(\gamma)) avec ///		\frac{V\dot\gamma}{g} = 0 pour le palier 
 		nz_cmd.modif = 1;
 		/* Test */
 		if (in_test == 1){
