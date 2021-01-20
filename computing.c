@@ -78,7 +78,7 @@ void computeCmd(float bank_angle_obj){
 	pthread_mutex_unlock(&lock_nx_cmd);
 
 	/////////////////////////////////////////////////////////////////////////////////
-	//Calcul de ny cmd
+	//Calcul de nz cmd
 	/////////////////////////////////////////////////////////////////////////////////
 	pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
 		nz_cmd.value = cos(local_fpa)/cos(local_bank_angle_aircraft); //ny = \frac{1}{\cos(\phi)}(\frac{V\dot\gamma}{g} + \cos(\gamma)) avec ///		\frac{V\dot\gamma}{g} = 0 pour le palier 

@@ -429,7 +429,7 @@ void intHandler(int dummy) {
 
 int start(const char* bus, float sendCmd){
     	/* initialisation */
-	IvyInit ("Guid_COMM_APP", "Bonjour de Guid COMM", 0, 0, 0, 0);
+	IvyInit ("GUID_COMM_APP", "Bonjour de GUID COMM", 0, 0, 0, 0);
 	IvyStart (bus);
 	
 
@@ -439,10 +439,10 @@ int start(const char* bus, float sendCmd){
 	
 	IvyBindMsg (getState, 0, "^StateVector x=(.*) y=(.*) z=(.*) Vp=(.*) fpa=(.*) psi=(.*) phi=(.*)");//StateVector x=1610.0 y=-3.7719121413738466e-13 z=0.0 Vp=70.0 fpa=0.0 psi=6.283185307179586 phi=0.0
 	
-	IvyBindMsg (getForecast, 0, "GT TAS=(.*) CRZ_ALT=(.*)");
+	IvyBindMsg (getForecast, 0, "GT TAS=(.*) CRZ_ALT=(.*)"); //"GT TAS=150.0 CRZ_ALT=1000"
 	
 	// abonnement  
-	IvyBindMsg (computeBankAngleObj, 0, "^GS_Data Time=(.*) XTK=(.*) TAE=(.*) DTWPT=(.*) BANK_ANGLE_REF=(.*) ALDTWP=(.*)"); 
+	IvyBindMsg (computeBankAngleObj, 0, "^GS_Data Time=(.*) XTK=(.*) TAE=(.*) DTWPT=(.*) BANK_ANGLE_REF=(.*) ALDTWPT=(.*)"); 
 	
 	//on s'abonne 
 	IvyBindMsg (getMode, 0, "^FCULateral Mode=(.*) Val=(.*)");//FCULateral Mode=SelectedHeading Val=10"
@@ -457,10 +457,10 @@ int start(const char* bus, float sendCmd){
 	
 	
 	// abonnement 
-	IvyBindMsg (restart, 0, "^Restart_guid_comm$");
+	IvyBindMsg (restart, 0, "^Restart_GUID_COMM$");
 	
 	// abonnement 
-	IvyBindMsg (stop, 0, "^Stop_guid_comm$");
+	IvyBindMsg (stop, 0, "^Stop_GUID_COMM$");
 	
 	signal(SIGINT, intHandler); //abonnement au raccourci ctrl+c
 	
