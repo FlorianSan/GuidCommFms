@@ -11,7 +11,7 @@ void error(char* function, char* param){
 			roll_cmd.modif = -1;
 		else roll_cmd.modif--;
 		if (roll_cmd.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value); //on prévient TRAJ de la désactivation du PA
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value); //on prévient TRAJ de la désactivation du PA
 			IvyStop(); //arrêt de l'app, redémarrage à chaud
 		}
 	}
@@ -20,7 +20,7 @@ void error(char* function, char* param){
 			nx_cmd.modif = -1;
 		else nx_cmd.modif--;
 		if (nx_cmd.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -29,7 +29,7 @@ void error(char* function, char* param){
 			nz_cmd.modif = -1;
 		else nz_cmd.modif--;
 		if (nz_cmd.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -38,7 +38,7 @@ void error(char* function, char* param){
 			global_bank_angle_obj.modif = -1;
 		else global_bank_angle_obj.modif--;
 		if (global_bank_angle_obj.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -47,7 +47,7 @@ void error(char* function, char* param){
 			gs.modif = -1;
 		else gs.modif--;
 		if (gs.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop(); 
 		}
 	}
@@ -56,7 +56,7 @@ void error(char* function, char* param){
 			bank_angle_aircraft.modif = -1;
 		else bank_angle_aircraft.modif--;
 		if (bank_angle_aircraft.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -75,7 +75,7 @@ void error(char* function, char* param){
 			xtk.modif = -1;
 		else xtk.modif--;
 		if (xtk.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -85,7 +85,7 @@ void error(char* function, char* param){
 			tae.modif = -1;
 		else tae.modif--;
 		if (tae.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -95,7 +95,7 @@ void error(char* function, char* param){
 			dist.modif = -1;
 		else dist.modif--;
 		if (dist.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -105,7 +105,7 @@ void error(char* function, char* param){
 			bank_angle_ref.modif = -1;
 		else bank_angle_ref.modif--;
 		if (bank_angle_ref.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -114,7 +114,7 @@ void error(char* function, char* param){
 			current_time.modif = -1;
 		else current_time.modif--;
 		if (current_time.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -123,7 +123,7 @@ void error(char* function, char* param){
 			heading_aircraft.modif = -1;
 		else heading_aircraft.modif--;
 		if (heading_aircraft.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -132,7 +132,7 @@ void error(char* function, char* param){
 			heading_objective.modif = -1;
 		else heading_objective.modif--;
 		if (heading_objective.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 			IvyStop();
 		}
 	}
@@ -143,7 +143,7 @@ void error(char* function, char* param){
 	int cpt; //Nombre d'erreurs simultanées
 	cpt = (roll_cmd.modif < 0) + (nx_cmd.modif < 0) + (nz_cmd.modif < 0) + (global_bank_angle_obj.modif < 0) + (gs.modif < 0) + (bank_angle_aircraft.modif < 0) + (fpa.modif < 0) + (xtk.modif < 0) + (tae.modif < 0) + (dist.modif < 0) + (current_time.modif < 0) + (bank_angle_ref.modif < 0) + (heading_aircraft.modif < 0) + (heading_objective.modif < 0);
 	if (cpt > 1){ //Au delà de deux erreurs simultanées, on désactive le PA
-	   	IvySendMsg("GC_AP Time=%ld AP_State='Restart'", current_time.value);
+	   	IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 		IvyStop();
 	}
 }

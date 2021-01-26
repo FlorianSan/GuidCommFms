@@ -575,8 +575,9 @@ int main (int argc, char**argv){
 		pthread_mutex_lock(&lock_ap_state);
 		ap_state = 1;
 		pthread_mutex_unlock(&lock_ap_state);
+		//Si erreurs, fonction error arrête l'app
 		//Remise à zéro des erreurs en cas de redémarrage à chaud
-		error_init();
+		error_init(); 
 	    	//appel de la fonction principale
     		start(bus, sendCmd);
     		if (in_test == 1)
