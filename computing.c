@@ -13,8 +13,8 @@ void computeCmd(float bank_angle_obj){
 	float local_bank_angle_aircraft;
 	
 	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
+		local_bank_angle_aircraft = bank_angle_aircraft.value; //utiliser l'ancienne valeur meme si pas à jour
 		if(bank_angle_aircraft.modif){
-			local_bank_angle_aircraft = bank_angle_aircraft.value;
 			bank_angle_aircraft.modif = 0;
 			/* Test */
 			if (in_test == 1){
@@ -31,8 +31,8 @@ void computeCmd(float bank_angle_obj){
 	/////////////////////////////////////////////////////////////////////////////////
 	float local_fpa;
 	pthread_mutex_lock(&lock_fpa);
+		local_fpa = fpa.value; //ancienne valeur meme si pas changée
 		if(fpa.modif){
-			local_fpa = fpa.value;
 			fpa.modif = 0;
 			if (in_test == 1){
 				printf("computeCmd : mise a jour local_fpa = %f\n", local_fpa);
