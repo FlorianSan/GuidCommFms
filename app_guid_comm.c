@@ -323,10 +323,10 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		//TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
 		if(current_time.value%1000 == 0){
 		    if(local_ap_state == 0){
-			sprintf(apState, "GC_AP Time=%ld AP_State='Selected'", current_time.value);
+			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='Selected'", current_time.value);
 		    }
 		    else if(local_ap_state == 1){
-			sprintf(apState, "GC_AP Time=%ld AP_State='Managed'", current_time.value);
+			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='Managed'", current_time.value);
 		    }
 		IvySendMsg("%s", apState);
 		if (in_test == 1){
@@ -583,6 +583,6 @@ int main (int argc, char**argv){
         		printf("REDEMARAGE FONCTION\n");
 	}
 	printf("APP CRASHED\n");
-	IvySendMsg("GC_AP Time=%ld AP_State='Deactivated'", current_time.value); //on prévient TRAJ de la désactivation du PA
+	IvySendMsg("GC_AP Time=%ld AP_State='Deactivated' AP_Mode='NULL' ", current_time.value); //on prévient TRAJ de la désactivation du PA
 	return 0;
 }
