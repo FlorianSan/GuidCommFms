@@ -323,10 +323,10 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		//TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
 		if(current_time.value%1000 == 0){
 		    if(local_ap_state == 0){
-			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='Selected'", current_time.value);
+			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='NAV'", current_time.value);
 		    }
 		    else if(local_ap_state == 1){
-			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='Managed'", current_time.value);
+			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='HDG'", current_time.value);
 		    }
 		IvySendMsg("%s", apState);
 		if (in_test == 1){
@@ -396,7 +396,7 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 			track_obj.modif = 0;
 		}
 		else {error("sendGC", "track_obj");}
-		sprintf(trackObj, "GC_TO Time=%ld trackObj=%ld", current_time.value, track_obj.value); //commande, ancienne ou pas
+		sprintf(trackObj, "GC_TO Time=%ld Track_Obj=%ld", current_time.value, track_obj.value); //commande, ancienne ou pas
 		IvySendMsg ("%s", trackObj);
 		pthread_mutex_unlock(&lock_track_obj);
 		
@@ -571,7 +571,7 @@ int main (int argc, char**argv){
 	//while(nb_try < 4){
 	while(1){
 		nb_try++;
-		//PA actif à chaque démarragef
+		//ATTENTION PA actif à chaque démarragef
 		pthread_mutex_lock(&lock_ap_state);
 		ap_state = 1;
 		pthread_mutex_unlock(&lock_ap_state);
