@@ -29,6 +29,7 @@ pthread_mutex_t lock_vp;
 pthread_mutex_t lock_ap_state;
 pthread_mutex_t lock_TAS;
 pthread_mutex_t lock_Alt;
+pthread_mutex_t lock_track_obj;
 
 /*typedef struct variables variables;
 struct variables{ //structure pour faire passer les infos dans computeBankAngleObj
@@ -74,6 +75,7 @@ varGlobFloat alt;
 varGlobLint current_time;
 varGlobLint heading_aircraft;
 varGlobLint heading_objective;
+varGlobLint track_obj;
 varGlobLint flight_starting;
 
 clock_t debut;

@@ -88,6 +88,22 @@ void computeCmd(float bank_angle_obj){
 			printf("computeCmd : calcul nz_cmd = %f, %d\n", nz_cmd.value, nz_cmd.modif);
 		}
 	pthread_mutex_unlock(&lock_nz_cmd);
+	
+	/////////////////////////////////////////////////////////////////////////////////
+	//Calcul de track objective
+	/////////////////////////////////////////////////////////////////////////////////
+    pthread_mutex_lock(&lock_track_obj);
+	pthread_mutex_lock(&lock_nz_cmd);
+	pthread_mutex_lock(&lock_heading_aircraft);
+	pthread_mutex_lock(&lock_vp);
+	pthread_mutex_lock(&lock_bank_angle_objective);
+	track_obj.value = heading_aircraft.value + tau_psi*(g_gravite*nz_cmd.value*global_bank_angle_obj.value)/vp.value;
+	track_obj.modif = 1;
+	pthread_mutex_unlock(&lock_bank_angle_objective);	
+	pthread_mutex_unlock(&lock_vp);
+	pthread_mutex_unlock(&lock_heading_aircraft);
+	pthread_mutex_unlock(&lock_nz_cmd);
+	pthread_mutex_unlock(&lock_track_obj);
 }
 
 float computeBankAngleObjNav(float ground_speed){

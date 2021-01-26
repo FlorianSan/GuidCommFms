@@ -305,7 +305,7 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	}
     	/////////
     
-	char tm[50], rollCommande[100], nxCommande[100], nzCommande[100], apState[100], bankAngle[100];
+	char tm[50], rollCommande[100], nxCommande[100], nzCommande[100], apState[100], bankAngle[100], trackObj[100];
 
 	/* Acquisition du temps */
 	if (testFormat(argv[0], "int")){
@@ -368,25 +368,38 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		/////////////////////////////////////////////////////////////////////////////////
 		pthread_mutex_lock(&lock_nx_cmd); // protection de la variable globale nx_cmd
 		if (nx_cmd.modif){
-			sprintf(nxCommande, "APNxControl nx=%f", nx_cmd.value); //commande, ancienne ou pas
-			IvySendMsg ("%s", nxCommande);
 			nx_cmd.modif = 0;
 		}
 		else {error("sendGC", "nx_cmd");}
+		sprintf(nxCommande, "APNxControl nx=%f", nx_cmd.value); //commande, ancienne ou pas
+		IvySendMsg ("%s", nxCommande);
 		pthread_mutex_unlock(&lock_nx_cmd);
 
 
 		/////////////////////////////////////////////////////////////////////////////////
-		//Envoi de ny cmd
+		//Envoi de nz cmd
 		/////////////////////////////////////////////////////////////////////////////////
 		pthread_mutex_lock(&lock_nz_cmd); // protection de la variable globale nz_cmd
 		if (nz_cmd.modif){
-			sprintf(nzCommande, "APNzControl nz=%f", nz_cmd.value); //commande, ancienne ou pas
-			IvySendMsg ("%s", nzCommande);
 			nz_cmd.modif = 0;
 		}
 		else {error("sendGC", "nz_cmd");}
+		sprintf(nzCommande, "APNzControl nz=%f", nz_cmd.value); //commande, ancienne ou pas
+		IvySendMsg ("%s", nzCommande);
 		pthread_mutex_unlock(&lock_nz_cmd);
+		
+		/////////////////////////////////////////////////////////////////////////////////
+		//Envoi de track objective
+		/////////////////////////////////////////////////////////////////////////////////
+		pthread_mutex_lock(&lock_track_obj); // protection de la variable globale track_obj
+		if (track_obj.modif){
+			track_obj.modif = 0;
+		}
+		else {error("sendGC", "track_obj");}
+		sprintf(trackObj, "GC_TO Time=%ld trackObj=%ld", current_time.value, track_obj.value); //commande, ancienne ou pas
+		IvySendMsg ("%s", trackObj);
+		pthread_mutex_unlock(&lock_track_obj);
+		
 		fin = clock();
 		unsigned long micro_tot = (fin -  debut) * 1000000 / CLOCKS_PER_SEC;
 	    	printf("Temps d'execution : %ld micro secondes\n",micro_tot);
