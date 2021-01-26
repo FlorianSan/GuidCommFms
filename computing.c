@@ -122,10 +122,10 @@ float computeBankAngleObjNav(float ground_speed){
 float computeBankAngleObjHdg(){
     pthread_mutex_lock(&lock_vp);
 	pthread_mutex_lock(&lock_nz_cmd); 
-	    float K2= - vp.value / (g_gravite * nz_cmd.value * tau_psi);                        //k_{2} = -\frac{V_{p}}{g n_{z}\tau_{\psi}}
+	    float K4 = vp.value / (g_gravite * nz_cmd.value * tau_psi);                        //k_{2} = -\frac{V_{p}}{g n_{z}\tau_{\psi}}
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
 	
-	return sat(K2 * (heading_objective.value - heading_aircraft.value), 30.0);
+	return sat(K4 * (heading_objective.value - heading_aircraft.value), 30.0);
 
 }
