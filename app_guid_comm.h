@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include <signal.h>
+#include <math.h>
 
 #include "computing.h"
 #include "errors.h"

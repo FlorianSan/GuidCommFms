@@ -132,9 +132,7 @@ float computeBankAngleObjHdg(){
 	    float K4 = vp.value / (g_gravite * nz_cmd.value * tau_psi);                        //k_{2} = -\frac{V_{p}}{g n_{z}\tau_{\psi}}
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
-	
-	printf("%ld\n",heading_objective.value - heading_aircraft.value);
-	
-	return sat(K4 * (heading_objective.value - heading_aircraft.value), 0.523599);
+		
+	return sat(K4 * (heading_objective.value - heading_aircraft.value)* M_PI / 180, 0.523599);
 
 }

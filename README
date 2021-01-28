@@ -3,13 +3,7 @@ Il a pour but de développer un FMS. Nous sommes le groupe Guid-COMM qui effectu
 
 Pour compiler : 
 
-Installation de la lib ivy :
-
-Tu télécharges, sur le site, le paquet ivy
-
-https://www.eei.cena.fr/products/ivy/download/binaries.html#ubuntu
-
-Alors là, pour éviter de te faire insulter car il te manque des lib tu vas installer tout ça:
+Tu vas installer tout ça:
 
 Normalement toutes les distributions d’Ubuntu intègrent gcc et g++ mais au cas oû:
 
@@ -72,11 +66,14 @@ Ligne de code de compilation :
 gcc -o app app_guid_comm.c errors.c computing.c -I ivy-c_3.15.1/src -L ivy-c_3.15.1/src -livy -lpcre -lpthread -lm
 
 
-En remplaçant, /home/florian/Téléchargements/ par ton emplacement de fichier Ivy que tu as installé au début
 
         Test
+        
+Lancement
 
-Après tu fais un ./ hello
+./app -t 
+
+Lancement avec redirection dans un fichier texte
 
 ./app -t > terminal.txt 2>&1
 
