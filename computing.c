@@ -119,7 +119,7 @@ float computeBankAngleObjNav(float ground_speed){
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
 	
-	return sat(bank_angle_ref.value + K2 * tae.value + K3 * xtk.value , 0.523599); //Calculation of command1 in rad
+	return sat(bank_angle_ref.value + K2 * tae.value + K3 * xtk.value , 0.523599); //Calculation of command in rad
 
 }
 

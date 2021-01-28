@@ -267,7 +267,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	    /* heading_objective acquisition */
 	    if (testFormat(argv[1], "int")){
 		    heading_objective.value = atol(argv[1]);
-		    heading_objective.modif = 1; //data updated useless in this case, but keep the same architecture
+		    heading_objective.modif = 1; //data updated useless in this case, but keep the same structure
 	    }
 	    else{error("getMode", "heading_objective");}
 	    
