@@ -354,7 +354,7 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		else {error("sendGC", "roll_cmd");}
 		pthread_mutex_unlock(&lock_roll_cmd);
 
-		sprintf(rollCommande, "APLatControl rollRate=%f", (*(float*)data)); //commande, ancienne ou pas
+		sprintf(rollCommande, "APLatControl rollRate=%f", (*(float*)data)); //commande, ancienne ou pas APLatControl rollRate=1
 		IvySendMsg ("%s", rollCommande);
 
 	 	/* Test */

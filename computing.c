@@ -14,7 +14,7 @@ void computeCmd(float bank_angle_obj){
 	
 	pthread_mutex_lock(&lock_bank_angle_aircraft); // protection de la variable bank_angle_aircraft
 		local_bank_angle_aircraft = bank_angle_aircraft.value; //utiliser l'ancienne valeur meme si pas à jour
-		if(bank_angle_aircraft.modif){
+		if(bank_angle_aircraft.modif == 1){
 			bank_angle_aircraft.modif = 0;
 			/* Test */
 			if (in_test == 1){
@@ -22,7 +22,10 @@ void computeCmd(float bank_angle_obj){
 			}
 			/////////
 		}
-		else{error("computeCmd", "local_bank_angle_aircraft");}
+		else{
+		printf("computeCmd local_bank_angle_aircraft\n");
+		//error("computeCmd", "local_bank_angle_aircraft");
+		}
 	pthread_mutex_unlock(&lock_bank_angle_aircraft);
 	
 	
@@ -32,13 +35,17 @@ void computeCmd(float bank_angle_obj){
 	float local_fpa;
 	pthread_mutex_lock(&lock_fpa);
 		local_fpa = fpa.value; //ancienne valeur meme si pas changée
-		if(fpa.modif){
+		printf("fpa.modif=%d\n", fpa.modif);
+		if(fpa.modif == 1){
 			fpa.modif = 0;
 			if (in_test == 1){
 				printf("computeCmd : mise a jour local_fpa = %f\n", local_fpa);
 			}
 		}
-		else{error("computeCmd", "local_fpa");}
+		else{
+		printf("computeCmd local_fpa\n");
+		//error("computeCmd", "local_fpa");
+		}
 	pthread_mutex_unlock(&lock_fpa);
 	
 
@@ -115,7 +122,7 @@ float computeBankAngleObjNav(float ground_speed){
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
 	
-	return sat(bank_angle_ref.value + K2 * tae.value + K3 * xtk.value , 30.0); //Calcul de la commande1
+	return sat(bank_angle_ref.value + K2 * tae.value + K3 * xtk.value , 0.523599); //Calcul de la commande1 en rad
 
 }
 
@@ -126,6 +133,6 @@ float computeBankAngleObjHdg(){
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
 	
-	return sat(K4 * (heading_objective.value - heading_aircraft.value), 30.0);
+	return sat(K4 * (heading_objective.value - heading_aircraft.value), 0.523599);
 
 }

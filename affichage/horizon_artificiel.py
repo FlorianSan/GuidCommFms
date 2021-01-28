@@ -127,6 +127,7 @@ if __name__ == '__main__':
     IvyBindMsg(changeRollCmd, "^APLatControl rollRate=[^ ] ")
     
     root = tk.Tk()
+    root.geometry("500x500+0+0")
     app = SimpleApp(root,'affichage/background_trans.png', 'affichage/centre_trans.png')
     root.mainloop()
 

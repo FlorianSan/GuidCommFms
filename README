@@ -78,6 +78,8 @@ En remplaçant, /home/florian/Téléchargements/ par ton emplacement de fichier 
 
 Après tu fais un ./ hello
 
+./app -t > terminal.txt 2>&1
+
 Tu lances ivyprobe en ligne de commande:
 
 ivyprobe -b 10.3.141.120:2010 ‘(.*)’

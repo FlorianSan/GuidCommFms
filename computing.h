@@ -4,10 +4,14 @@
 #include "errors.h"
 #include "app_guid_comm.h"
 #include <math.h>
-
-#define tau_phi 3.0
+/*
+#define tau_phi 3.0 
 #define tau_psi 10.0
 #define tau_xtk 3.0
+*/
+#define tau_phi 30.0 
+#define tau_psi 50.0
+#define tau_xtk 30.0
 
 #define g_gravite 9.81
 

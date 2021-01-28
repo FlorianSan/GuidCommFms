@@ -90,13 +90,13 @@ if __name__ == '__main__':
 
     plt.ion()
 
-    figure, a = plt.subplots(figsize=(5,5))
-    
+    figure, a = plt.subplots()
+    mngr = plt.get_current_fig_manager()
+    mngr.window.setGeometry(0,600,250, 250)
     
    
     
-    a.set_xlim([-10000, 10000])
-    a.set_ylim([-10000, 10000])
+    
     
     a.grid(True,linestyle='-',color='0.75')
     line1, = a.plot([X],[Y], markersize=1, color="red", marker=".")
@@ -105,8 +105,10 @@ if __name__ == '__main__':
     figure.canvas.set_window_title('Affichage position avion')
     
     while(True):
-        line1.set_xdata(X)
-        line1.set_ydata(Y)
+        line1.set_xdata(Y)
+        line1.set_ydata(X)
+        a.set_xlim([X[-1] - 10000, X[-1] + 10000])
+        a.set_ylim([Y[-1] - 10000, Y[-1] + 10000])
         figure.canvas.draw()
         figure.canvas.flush_events()
         #a.relim()

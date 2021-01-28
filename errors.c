@@ -4,7 +4,7 @@
 //Gère les erreurs récurrentes
 void error(char* function, char* param){
 	fprintf(stderr,"ERROR : Problem in %s about %s\n",function, param);
-	
+	/*
 	//gestion d'une seule erreur
 	if (strcmp(param, "roll_cmd")){
 		if (roll_cmd.modif == 1)
@@ -146,6 +146,7 @@ void error(char* function, char* param){
 	   	IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 		IvyStop();
 	}
+	*/
 }
 
 /*int acquisition(void* data, char* arg, char* type){
