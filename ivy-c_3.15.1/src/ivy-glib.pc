@@ -1,0 +1,12 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: ivy-glib
+Description: A software bus (Glib main loop)
+Requires: glib-2.0
+Version: 3.15
+Libs: -L${libdir} -lglibivy
+Libs.private: -lpcre 
+Cflags: -I${includedir}

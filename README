@@ -69,7 +69,7 @@ Il te faut modifier dans le hellotranslater.c l’adresse que tu veux pour ton r
 
 Ligne de code de compilation :
 
-gcc -o app app_guid_comm.c errors.c computing.c -I/home/florian/Téléchargements/ivy-c_3.15.1/src -L/home/florian/Téléchargements/ivy-c_3.15.1/src -livy -lpcre -lpthread -lm
+gcc -o app app_guid_comm.c errors.c computing.c -I ivy-c_3.15.1/src -L ivy-c_3.15.1/src -livy -lpcre -lpthread -lm
 
 
 En remplaçant, /home/florian/Téléchargements/ par ton emplacement de fichier Ivy que tu as installé au début

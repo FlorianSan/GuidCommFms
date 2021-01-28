@@ -1,0 +1,11 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: ivy-c
+Description: A software bus
+Version: 3.15
+Libs: -L${libdir} -livy
+Libs.private: -lpcre 
+Cflags: -I${includedir}

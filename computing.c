@@ -133,6 +133,8 @@ float computeBankAngleObjHdg(){
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
 	
+	printf("%ld\n",heading_objective.value - heading_aircraft.value);
+	
 	return sat(K4 * (heading_objective.value - heading_aircraft.value), 0.523599);
 
 }
