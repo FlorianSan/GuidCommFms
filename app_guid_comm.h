@@ -48,20 +48,20 @@ struct variables{ //structure pour faire passer les infos dans computeBankAngleO
 
 typedef struct{
 	float value;
-	int modif; //1 si l'info est produite 0 si l'info est consommé	
+	int modif; //1 if data is updated 0 if data is used
 }varGlobFloat;
 
 typedef struct{
 	long int value;
-	int modif; //1 si l'info est produite 0 si l'info est consommé	
+	int modif; //1 if data is updated 0 if data is used	
 }varGlobLint;
 
 //Variables globales protégées des accès concurents
-varGlobFloat roll_cmd; // commande de roulis
-varGlobFloat nx_cmd; // commande en facteur de charge longitudinal
-varGlobFloat nz_cmd; // commande en facteur de charge vertical
+varGlobFloat roll_cmd; // roll command
+varGlobFloat nx_cmd; // longitudinal load factor command
+varGlobFloat nz_cmd; // vertical load factor command
 varGlobFloat global_bank_angle_obj;
-varGlobFloat gs; //ground speed
+varGlobFloat gs; 
 varGlobFloat bank_angle_aircraft;
 varGlobFloat fpa;
 varGlobFloat vp;
@@ -82,8 +82,8 @@ varGlobLint flight_starting;
 clock_t debut;
 clock_t fin;
 
-int ap_mode; //PA à protéger
-int in_test; //variable globale du mode test
+int ap_mode; //PA to protect
+int in_test; //global variable of test mode
 
 void getPosition(IvyClientPtr app, void *data, int argc, char **argv);
 void getState(IvyClientPtr app, void *data, int argc, char **argv);

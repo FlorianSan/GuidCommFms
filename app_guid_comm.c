@@ -7,7 +7,7 @@ void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
 	debut = clock();
 	/* Test */
 	if (in_test == 1){
-		printf("Entree dans getPosition\n");
+		printf("Entry into getPosition\n");
 	}
 	/////////
 	
@@ -50,7 +50,7 @@ void getPosition(IvyClientPtr app, void *data, int argc, char **argv){
 void getState(IvyClientPtr app, void *data, int argc, char **argv){
 	/* Test */
 	if (in_test == 1){
-		printf("Entree dans getState\n");
+		printf("Entry into getState\n");
 	}
 		
 	/* Vp acquisition */
@@ -106,7 +106,7 @@ void getState(IvyClientPtr app, void *data, int argc, char **argv){
 
 void getForecast(IvyClientPtr app, void *data, int argc, char **argv){
 	if (in_test == 1){
-		printf("Entree dans getForecast\n");
+		printf("Entry into getForecast\n");
 	}
 	
 	pthread_mutex_lock(&lock_TAS);
@@ -137,7 +137,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	/* Test */
 	clock_t begin;
 	if (in_test == 1){
-		printf("Entree dans computeBankAngleObj\n");
+		printf("Entry into computeBankAngleObj\n");
 		begin = clock();
 	}
 	/////////
@@ -204,10 +204,10 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		/* Test */
 		if (in_test == 1){
 			if(local_ap_mode){
-				printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj);
+				printf("computeBankAngleObjNav : calculation bank_angle_obj_nav = %f\n", bank_angle_obj);
 			}
 			else if (local_ap_mode == 0){
-				printf("computeBankAngleObjHdg : calcul bank_angle_obj_hdg = %f\n", bank_angle_obj);
+				printf("computeBankAngleObjHdg : calculation bank_angle_obj_hdg = %f\n", bank_angle_obj);
 			}
 		}
 		/////////
@@ -230,7 +230,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	    //computation duration
 		clock_t end = clock();
     		unsigned long micro = (end -  begin) * 1000000 / CLOCKS_PER_SEC;
-    		printf("Temps d'execution : %ld micro secondes\n",micro);
+    		printf("Execution time : %ld micro secondes\n",micro);
     	}
     	/////////
 }
@@ -239,7 +239,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	/* Test */
 	if (in_test == 1){
-		printf("Entree dans getMode\n");
+		printf("Entry into getMode\n");
 	}
 	/////////
 
@@ -294,7 +294,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
     /* Test */
     if (in_test == 1){
-	    printf("Entree dans sendGC\n");
+	    printf("Entry into sendGC\n");
 	}
     	/////////
     
@@ -399,10 +399,10 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		
 		fin = clock();
 		unsigned long micro_tot = (fin -  debut) * 1000000 / CLOCKS_PER_SEC;
-	    	printf("Temps d'execution : %ld micro secondes\n",micro_tot);
+	    	printf("Global execution time : %ld micro secondes\n",micro_tot);
 	}
 	else{
-		printf("Avion pas encore en vol\n");
+		printf("Aircraft not yet in flight\n");
 	}
 	
 }
@@ -439,7 +439,7 @@ void intHandler(int dummy) {
 
 int start(const char* bus){
     	/* initialisation */
-	IvyInit ("GUID_COMM_APP", "Bonjour de GUID COMM", 0, 0, 0, 0);
+	IvyInit ("GUID_COMM_APP", "Hello from GUID COMM", 0, 0, 0, 0);
 	IvyStart (bus);
 	
 
@@ -510,7 +510,7 @@ int main (int argc, char**argv){
 			printf("App ready to be tested\n");
 		}
 		else{
-			printf("Argument invalide\n");
+			printf("Invalid argument\n");
 			exit(1);
 		}
 	}
@@ -522,7 +522,7 @@ int main (int argc, char**argv){
 			bus = argv[2];
 		}
 		else{
-			printf("Arguments invalides. Definir un bus -b 127.127.127.127:2010\n");
+			printf("Invalid argument. Define a bus -b 127.127.127.127:2010\n");
 			exit(1);
 		}
 	}
@@ -540,7 +540,7 @@ int main (int argc, char**argv){
 			printf("App ready to be tested\n");
 		}
 		else{
-			printf("Arguments invalides. Definir un bus -b 127.127.127.127:2010\n");
+			printf("Invalid argument. Define a bus -b 127.127.127.127:2010\n");
 			exit(1);
 		}
 	}
@@ -563,19 +563,19 @@ int main (int argc, char**argv){
 	while(nb_try < 4){
 	//while(1){
 		nb_try++;
-		//ATTENTION PA actif à chaque démarrage
+		//CAUTION PA in NAV mode at each start
 		pthread_mutex_lock(&lock_ap_mode);
 		ap_mode = 1;
 		pthread_mutex_unlock(&lock_ap_mode);
-		//Si erreurs, fonction error arrête l'app
-		//Remise à zéro des erreurs en cas de redémarrage à chaud
+		//If errors, error function stops the app
+		//Resetting errors in the event of a warm restart
 		error_init(); 
-	    	//appel de la fonction principale
+	    	//call of the main function
     		start(bus);
     		if (in_test == 1)
-        		printf("REDEMARAGE FONCTION\n");
+        		printf("RESTART FUNCTION\n");
 	}
 	printf("APP CRASHED\n");
-	IvySendMsg("GC_AP Time=%ld AP_State='Deactivated' AP_Mode='NULL' ", current_time.value); //on prévient TRAJ de la désactivation du PA
+	IvySendMsg("GC_AP Time=%ld AP_State='Deactivated' AP_Mode='NULL' ", current_time.value); //TRAJ is notified of the termination of the application
 	return 0;
 }

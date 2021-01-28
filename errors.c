@@ -1,18 +1,18 @@
 #include "errors.h"
 
 
-//Gère les erreurs récurrentes
+//Handles recurring errors
 void error(char* function, char* param){
 	fprintf(stderr,"ERROR : Problem in %s about %s\n",function, param);
 	/*
-	//gestion d'une seule erreur
+	//management of a single error
 	if (strcmp(param, "roll_cmd")){
 		if (roll_cmd.modif == 1)
 			roll_cmd.modif = -1;
 		else roll_cmd.modif--;
 		if (roll_cmd.modif == -3){
-			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value); //on prévient TRAJ de la désactivation du PA
-			IvyStop(); //arrêt de l'app, redémarrage à chaud
+			IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value); //TRAJ is warned of the deactivation of the AP
+			IvyStop(); //app shutdown, warm restart
 		}
 	}
 	else if (strcmp(param, "nx_cmd")){
@@ -139,10 +139,10 @@ void error(char* function, char* param){
 
 	
 
-	//gestion d'erreurs simultanées
-	int cpt; //Nombre d'erreurs simultanées
+	//management of simultaneous errors
+	int cpt; //Number of simultaneous errors
 	cpt = (roll_cmd.modif < 0) + (nx_cmd.modif < 0) + (nz_cmd.modif < 0) + (global_bank_angle_obj.modif < 0) + (gs.modif < 0) + (bank_angle_aircraft.modif < 0) + (fpa.modif < 0) + (xtk.modif < 0) + (tae.modif < 0) + (dist.modif < 0) + (current_time.modif < 0) + (bank_angle_ref.modif < 0) + (heading_aircraft.modif < 0) + (heading_objective.modif < 0);
-	if (cpt > 1){ //Au delà de deux erreurs simultanées, on désactive le PA
+	if (cpt > 1){ //If simultaneous errors, AP is shutdown
 	   	IvySendMsg("GC_AP Time=%ld AP_State='Restart' AP_Mode='NULL'", current_time.value);
 		IvyStop();
 	}
@@ -179,14 +179,14 @@ void error(char* function, char* param){
 	return 1;
 }*/
 
-//Teste si le format de réception est correct
+//Check if the reception format is correct
 int testFormat(char* c, char* type){
 	int length = strlen(c);
-	int point_cpt = 0; //il ne faut qu'un seul point dans un float
-	int minus_cpt = 0; //les caractères peuvent être négatifs
-	int scient_cpt = 0; //ecriture scientifique
+	int point_cpt = 0; //only one point is needed in a float
+	int minus_cpt = 0; //characters can be negative
+	int scient_cpt = 0; //scientific writing
 	int bool_scient = 0;
-	char temp[1]; //tampon pour le caractère en cours d'analyse (nécessaire pour le "." et le "-")
+	char temp[1]; //buffer for the character being parsed (necessary for the "." and the "-")
 	for (int j=0; j<length; j++){
 		strncpy(temp,&c[j],1);
 		if (! isdigit(c[j])){
@@ -211,7 +211,7 @@ int testFormat(char* c, char* type){
 	return 1;
 }
 
-//Réinitialise les compteurs d'erreur (TODO si temps : démarrage à froid)
+//Resets the error counters (TODO if time: cold start)
 void error_init(){
 	gs.modif = 0;
 	bank_angle_aircraft.modif = 0;
