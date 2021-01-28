@@ -92,7 +92,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv);
 void getMode(IvyClientPtr app, void *data, int argc, char **argv);
 void send(IvyClientPtr app, void *data, int argc, char **argv);
 void stop(IvyClientPtr app, void *data, int argc, char **argv);
-int start(const char* bus, float sendCmd);
+int start(const char* bus);
 int main (int argc, char**argv);
 
 #endif

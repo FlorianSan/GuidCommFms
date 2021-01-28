@@ -347,16 +347,14 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	    /////////////////////////////////////////////////////////////////////////////////
 	    //Envoi de roll cmd
 	    /////////////////////////////////////////////////////////////////////////////////
-		pthread_mutex_lock(&lock_roll_cmd); //récupère la valeur de commande à voir si on refait un try
+		pthread_mutex_lock(&lock_roll_cmd); 
 		if(roll_cmd.modif){
-			(*(float*)data) = roll_cmd.value;
 			roll_cmd.modif = 0;
 		}
 		else {error("sendGC", "roll_cmd");}
-		pthread_mutex_unlock(&lock_roll_cmd);
-
-		sprintf(rollCommande, "APLatControl rollRate=%f", (*(float*)data)); //commande, ancienne ou pas APLatControl rollRate=1
+		sprintf(rollCommande, "APLatControl rollRate=%f", roll_cmd.value); //commande, ancienne ou pas APLatControl rollRate=1
 		IvySendMsg ("%s", rollCommande);
+		pthread_mutex_unlock(&lock_roll_cmd);
 
 	 	/* Test */
 		if (in_test == 1)
@@ -441,7 +439,7 @@ void intHandler(int dummy) {
 	exit(EXIT_SUCCESS);
 }
 
-int start(const char* bus, float sendCmd){
+int start(const char* bus){
     	/* initialisation */
 	IvyInit ("GUID_COMM_APP", "Bonjour de GUID COMM", 0, 0, 0, 0);
 	IvyStart (bus);
@@ -463,7 +461,7 @@ int start(const char* bus, float sendCmd){
 	
 	
 	//on s'abonne à l'holorge qui cadence nos envois
-	IvyBindMsg (sendGC, &sendCmd, "^Time t=(.*)");
+	IvyBindMsg (sendGC, 0, "^Time t=(.*)");
 	
 	
 	//on s'abonne au demmarage du vol
@@ -486,9 +484,9 @@ int main (int argc, char**argv){
 
 	int nb_try = 0; //nombre de fois où on a démarré l'app (l'app ne redémarre plus si trop d'erreurs)
 	const char* bus = 0;
-    	int nb_sent = 0; //A voir avec la fonction sendGC
+    int nb_sent = 0; //A voir avec la fonction sendGC
     	//Garde la dernière valeur reçue en cas de panne
-	float sendCmd; 
+
 	
 	//Initialisation test
 	in_test = 0;
@@ -580,7 +578,7 @@ int main (int argc, char**argv){
 		//Remise à zéro des erreurs en cas de redémarrage à chaud
 		error_init(); 
 	    	//appel de la fonction principale
-    		start(bus, sendCmd);
+    		start(bus);
     		if (in_test == 1)
         		printf("REDEMARAGE FONCTION\n");
 	}
