@@ -190,14 +190,14 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	//dans le mode managé
 	if (gs.modif){
 	
-	    pthread_mutex_lock(&lock_ap_state);
-	    int local_ap_state = ap_state; //comme il n'y à pas de modif de ap_state
-	    pthread_mutex_unlock(&lock_ap_state);
+	    pthread_mutex_lock(&lock_ap_mode);
+	    int local_ap_mode = ap_mode; //comme il n'y à pas de modif de ap_mode
+	    pthread_mutex_unlock(&lock_ap_mode);
 	
-		if(local_ap_state){
+		if(local_ap_mode){
 			bank_angle_obj = computeBankAngleObjNav(gs.value); //Calcul de la commande 
 		}
-		else if (local_ap_state == 0){
+		else if (local_ap_mode == 0){
 			pthread_mutex_lock(&lock_heading_aircraft);
 			pthread_mutex_lock(&lock_heading_objective);
 			bank_angle_obj = computeBankAngleObjHdg();
@@ -209,10 +209,10 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 		gs.modif = 0;
 		/* Test */
 		if (in_test == 1){
-			if(local_ap_state){
+			if(local_ap_mode){
 				printf("computeBankAngleObjNav : calcul bank_angle_obj_nav = %f\n", bank_angle_obj);
 			}
-			else if (local_ap_state == 0){
+			else if (local_ap_mode == 0){
 				printf("computeBankAngleObjHdg : calcul bank_angle_obj_hdg = %f\n", bank_angle_obj);
 			}
 		}
@@ -251,10 +251,10 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 
 	char mode_managed[] = "Managed", mode_selected[] = "SelectedHeading";
 	
-    	pthread_mutex_lock(&lock_ap_state);
+    	pthread_mutex_lock(&lock_ap_mode);
 	
 	if(strcmp(argv[0],mode_managed) == 0){
-	    ap_state = 1;
+	    ap_mode = 1;
 	    /* Test */
 	    if (in_test == 1){
 		    printf("getMode : AP actif\n");
@@ -262,7 +262,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	/////////
 	}
 	else if (strcmp(argv[0],mode_selected) == 0){
-	    ap_state = 0;
+	    ap_mode = 0;
 	    /* Test */
 	    if (in_test == 1){
 		    printf("getMode : AP inactif\n");
@@ -285,7 +285,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 	    pthread_mutex_unlock(&lock_heading_objective);
 	}
 	else {
-	    ap_state = 0;
+	    ap_mode = 0;
 	    
 	    /* Test */
 	    if (in_test == 1){
@@ -293,7 +293,7 @@ void getMode(IvyClientPtr app, void *data, int argc, char **argv){
 		}
 	    /////////
 	}
-	pthread_mutex_unlock(&lock_ap_state);
+	pthread_mutex_unlock(&lock_ap_mode);
 }
 
 //Envoie les commande à l'avion
@@ -315,22 +315,22 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	else{error("sendGC", "current_time");}
 	
     if(flight_starting.value == 1){
-	    pthread_mutex_lock(&lock_ap_state);
-		int local_ap_state = ap_state; //comme il n'y à pas de modif de ap_state
-		pthread_mutex_unlock(&lock_ap_state);
+	    pthread_mutex_lock(&lock_ap_mode);
+		int local_ap_mode = ap_mode; //comme il n'y à pas de modif de ap_mode
+		pthread_mutex_unlock(&lock_ap_mode);
 		
 		
 		//TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
 		if(current_time.value%1000 == 0){
-		    if(local_ap_state == 0){
+		    if(local_ap_mode == 0){
 			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='NAV'", current_time.value);
 		    }
-		    else if(local_ap_state == 1){
+		    else if(local_ap_mode == 1){
 			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='HDG'", current_time.value);
 		    }
 		IvySendMsg("%s", apState);
 		if (in_test == 1){
-			printf("AP state : %d \n", local_ap_state);
+			printf("AP state : %d \n", local_ap_mode);
 		    }
 	    }
 	    
@@ -572,9 +572,9 @@ int main (int argc, char**argv){
 	while(1){
 		nb_try++;
 		//ATTENTION PA actif à chaque démarragef
-		pthread_mutex_lock(&lock_ap_state);
-		ap_state = 1;
-		pthread_mutex_unlock(&lock_ap_state);
+		pthread_mutex_lock(&lock_ap_mode);
+		ap_mode = 1;
+		pthread_mutex_unlock(&lock_ap_mode);
 		//Si erreurs, fonction error arrête l'app
 		//Remise à zéro des erreurs en cas de redémarrage à chaud
 		error_init(); 

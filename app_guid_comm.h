@@ -27,7 +27,7 @@ pthread_mutex_t lock_heading_aircraft;
 pthread_mutex_t lock_heading_objective;
 pthread_mutex_t lock_fpa;
 pthread_mutex_t lock_vp;
-pthread_mutex_t lock_ap_state;
+pthread_mutex_t lock_ap_mode;
 pthread_mutex_t lock_TAS;
 pthread_mutex_t lock_Alt;
 pthread_mutex_t lock_track_obj;
@@ -82,7 +82,7 @@ varGlobLint flight_starting;
 clock_t debut;
 clock_t fin;
 
-int ap_state; //PA à protéger
+int ap_mode; //PA à protéger
 int in_test; //variable globale du mode test
 
 void getPosition(IvyClientPtr app, void *data, int argc, char **argv);
