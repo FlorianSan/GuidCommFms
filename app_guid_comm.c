@@ -319,8 +319,6 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		int local_ap_mode = ap_mode; //comme il n'y à pas de modif de ap_mode
 		pthread_mutex_unlock(&lock_ap_mode);
 		
-		
-		//TODO envoyer l'état du PA toutes les secondes d'après doc point focaux
 		if(current_time.value%1000 == 0){
 		    if(local_ap_mode == 0){
 			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='NAV'", current_time.value);
