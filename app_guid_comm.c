@@ -339,7 +339,8 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 	    if(global_bank_angle_obj.modif){
 	        global_bank_angle_obj.modif = 0; //on a utilisé la valeur
 	    }
-	    else {error("sendGC", "global_bank_angle_obj");}
+	    else{error("sendGC", "global_bank_angle_obj");}
+	    printf("GC_BA Time=%ld Bank_Angle_Obj=%f", current_time.value, global_bank_angle_obj.value);
 		sprintf(bankAngle, "GC_BA Time=%ld Bank_Angle_Obj=%f", current_time.value, global_bank_angle_obj.value); 
 		IvySendMsg ("%s", bankAngle);
 		pthread_mutex_unlock(&lock_bank_angle_objective);
@@ -358,8 +359,9 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 
 	 	/* Test */
 		if (in_test == 1)
-			printf("rollRate= %f time = %ld\n", (*(float*)data), current_time.value);
+			printf("rollRate= %f time = %ld\n", roll_cmd.value, current_time.value);
 		/////////
+		pthread_mutex_unlock(&lock_roll_cmd);
 
 
 		/////////////////////////////////////////////////////////////////////////////////
@@ -559,10 +561,10 @@ int main (int argc, char**argv){
 	/////////////////////////////////////////////////////////////////////////////////
     //Lancement IHM
     /////////////////////////////////////////////////////////////////////////////////
-	int status1 = system("python3 affichage/horizon_artificiel.py &");
+	/*int status1 = system("python3 affichage/horizon_artificiel.py &");
 	int status2 = system("python3 affichage/affichage_commande.py &");
 	int status3 = system("python3 affichage/affichage_position.py &");
-	
+	*/
 
     /////////////////////////////////////////////////////////////////////////////////
     //Boucle principale, permet un redemarrage de l'application suite à un plantage.
