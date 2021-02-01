@@ -107,8 +107,8 @@ if __name__ == '__main__':
     while(True):
         line1.set_xdata(Y)
         line1.set_ydata(X)
-        a.set_xlim([X[-1] - 10000, X[-1] + 10000])
-        a.set_ylim([Y[-1] - 10000, Y[-1] + 10000])
+        a.set_xlim([Y[-1] - 10000, Y[-1] + 10000])
+        a.set_ylim([X[-1] - 10000, X[-1] + 10000])
         figure.canvas.draw()
         figure.canvas.flush_events()
         #a.relim()
