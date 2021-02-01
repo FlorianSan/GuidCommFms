@@ -17,11 +17,11 @@
 
 
 //MACRO
-#define sat(x,sat_val) ( ((x) > sat_val) ? sat_val : ( (-(x) > sat_val) ? (-sat_val) : (x) ) ) //macro de stauration symetrique
+#define sat(x,sat_val) ( ((x) > sat_val) ? sat_val : ( (-(x) > sat_val) ? (-sat_val) : (x) ) ) //symmetrical saturation macro
 
 
 
-//Crée une commande de vitesse de roulis à partir du bank angle souhaité et du bank angle mesuré
+//Creates a roll speed command from the desired bank angle and the measured bank angle
 void computeCmd(float bank_angle_obj);
 
 extern float computeBankAngleObjNav(float ground_speed);
