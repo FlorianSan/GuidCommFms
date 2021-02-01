@@ -162,7 +162,7 @@ void computeBankAngleObj(IvyClientPtr app, void *data, int argc, char **argv){
 	else{error("computeBankAngleObj", "dist");}
 	
 	if (testFormat(argv[4], "float")){
-		bank_angle_ref.value = atof(argv[4]); //Bank angle in rad
+		bank_angle_ref.value = atof(argv[4])* M_PI / 180; //Bank angle arrive en deg 
 		bank_angle_ref.modif = 1; //data updated
 	}
 	else{error("computeBankAngleObj", "bank_angle_ref");}	
@@ -314,10 +314,10 @@ void sendGC(IvyClientPtr app, void *data, int argc, char **argv){
 		
 		//send AP state and mode every seconds
 		if(current_time.value%1000 == 0){
-		    if(local_ap_mode == 0){
+		    if(local_ap_mode == 1){
 			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='NAV'", current_time.value);
 		    }
-		    else if(local_ap_mode == 1){
+		    else if(local_ap_mode == 0){
 			sprintf(apState, "GC_AP Time=%ld AP_State='Activated' AP_Mode='HDG'", current_time.value);
 		    }
 		IvySendMsg("%s", apState);
@@ -552,10 +552,10 @@ int main (int argc, char**argv){
 	/////////////////////////////////////////////////////////////////////////////////
     //IHM launch
     /////////////////////////////////////////////////////////////////////////////////
-	/*int status1 = system("python3 affichage/horizon_artificiel.py &");
+	int status1 = system("python3 affichage/horizon_artificiel.py &");
 	int status2 = system("python3 affichage/affichage_commande.py &");
 	int status3 = system("python3 affichage/affichage_position.py &");
-	*/
+	
 
     /////////////////////////////////////////////////////////////////////////////////
     // Main loop, allows to restart the application following a crash.

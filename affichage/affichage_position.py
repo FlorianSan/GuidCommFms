@@ -100,8 +100,8 @@ if __name__ == '__main__':
     
     a.grid(True,linestyle='-',color='0.75')
     line1, = a.plot([X],[Y], markersize=1, color="red", marker=".")
-    a.set_xlabel("Position X")
-    a.set_ylabel("Position Y")
+    a.set_xlabel("Position Y")
+    a.set_ylabel("Position X")
     figure.canvas.set_window_title('Affichage position avion')
     
     while(True):
