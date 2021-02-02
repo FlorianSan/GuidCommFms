@@ -10,7 +10,7 @@
 #define tau_xtk 3.0
 */
 #define tau_phi 30.0 
-#define tau_psi 50.0
+#define tau_psi 30.0
 #define tau_xtk 30.0
 
 #define g_gravite 9.81

@@ -423,7 +423,7 @@ void stop(IvyClientPtr app, void *data, int argc, char **argv){
     //kill displays
 	int status4 = system("pkill -f horizon_artificiel.py &");
 	int status5 = system("pkill -f affichage_commande.py &");
-	int status6 = system("pkill -f affichage_position.py &");
+	//int status6 = system("pkill -f affichage_position.py &");
 	//kill the application
 	exit(EXIT_SUCCESS);
 }
@@ -432,7 +432,7 @@ void intHandler(int dummy) {
     //kill displays
 	int status4 = system("pkill -f horizon_artificiel.py &");
 	int status5 = system("pkill -f affichage_commande.py &");
-	int status6 = system("pkill -f affichage_position.py &");
+	//int status6 = system("pkill -f affichage_position.py &");
 	//kill the application
 	exit(EXIT_SUCCESS);
 }
@@ -554,7 +554,7 @@ int main (int argc, char**argv){
     /////////////////////////////////////////////////////////////////////////////////
 	int status1 = system("python3 affichage/horizon_artificiel.py &");
 	int status2 = system("python3 affichage/affichage_commande.py &");
-	int status3 = system("python3 affichage/affichage_position.py &");
+	//int status3 = system("python3 affichage/affichage_position.py &");
 	
 
     /////////////////////////////////////////////////////////////////////////////////
