@@ -129,7 +129,12 @@ float computeBankAngleObjHdg(){
 	    float K4 = vp.value / (g_gravite * nz_cmd.value * tau_psi); //k_{2} = -\frac{V_{p}}{g n_{z}\tau_{\psi}}
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
-		
-	return sat(K4 * (heading_objective.value - heading_aircraft.value)* M_PI / 180, 0.523599);
+	long int errorHeading = heading_objective.value - heading_aircraft.value;
+	if (errorHeading >M_PI){
+	    return sat(K4 * (errorHeading-2*M_PI)* M_PI / 180, 0.523599);
+	}
+	else{
+	    return sat(K4 * (errorHeading)* M_PI / 180, 0.523599);
+	}
 
 }
