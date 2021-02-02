@@ -130,7 +130,7 @@ float computeBankAngleObjHdg(){
 	pthread_mutex_unlock(&lock_nz_cmd);
 	pthread_mutex_unlock(&lock_vp);
 	float errorHeading = (heading_objective.value - heading_aircraft.value)* M_PI / 180; //rad
-	printf("errorHeading : %f\n",errorHeading*180/M_PI);
+	
 	if (errorHeading > M_PI){
 	    return sat(K4 * (errorHeading-2*M_PI), 0.523599);
 	}
