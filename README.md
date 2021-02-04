@@ -57,7 +57,7 @@ sudo make install
 ```
 Et maintenant tu peux compiler ton code
 
-         Compilation
+	Compilation
 
 Il te faut modifier dans le hellotranslater.c l’adresse que tu veux pour ton réseau.
 
