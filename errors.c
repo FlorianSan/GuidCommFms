@@ -149,36 +149,6 @@ void error(char* function, char* param){
 	*/
 }
 
-/*int acquisition(void* data, char* arg, char* type){
-	if (strcmp(type, "float")){
-		printf("arg : %s, test format : %d\n", arg, testFormat(arg, "float"));
-		if (testFormat(arg, "float")){
-			(*(varGlobFloat*)data).value = atof(arg);
-			printf("arg : %s, nouvelle valeur : %f\n", arg, (*(varGlobFloat*)data).value);
-			(*(varGlobFloat*)data).modif = 1;
-		}
-		else{
-			if ((*(varGlobFloat*)data).modif == 1)
-				(*(varGlobFloat*)data).modif = -1;
-			else (*(varGlobFloat*)data).modif--;
-			return 0;
-		}
-	}
-	else if (strcmp(type, "int")){
-		if (testFormat(arg, "int")){
-			(*(varGlobLint*)data).value = atol(arg);
-			(*(varGlobLint*)data).modif = 1;
-		}
-		else{
-			if ((*(varGlobLint*)data).modif == 1)
-				(*(varGlobLint*)data).modif = -1;
-			else (*(varGlobLint*)data).modif--;
-			return 0;
-		}
-	}
-	return 1;
-}*/
-
 //Check if the reception format is correct
 int testFormat(char* c, char* type){
 	int length = strlen(c);
