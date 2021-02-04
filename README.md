@@ -2,26 +2,14 @@ Ce dépot constitue un projet d'un groupe d'étudiant de l'ENAC.
 Il a pour but de développer un FMS. Nous sommes le groupe Guid-COMM qui effectue l'interface entre le groupe Guid-SEQ et le Pilote Automatique.
 
 # Librairie
-
-Tu vas installer tout ça:
+Toutes ces installations sont faites dans le install.sh du module FMS
 
 Normalement toutes les distributions d’Ubuntu intègrent gcc et g++ mais au cas oû:
 ```console
 sudo apt update
 
-sudo apt install build-essential
+sudo apt install -y build-essential xorg openbox libxt-dev libpcre3-dev tcl8.6-dev libglib2.0-dev
 
-sudo apt-get install xorg openbox
-
-tu reponds par: 'o' quand on te pose une question 
-
-sudo apt-get install libxt-dev
-
-sudo apt-get install libpcre3-dev
-
-sudo apt-get install tcl8.6-dev
-
-sudo apt-get install libglib2.0-dev
 ```
 
 Après en ligne commande tu vas dans /ivy-c_3.15.1/src
